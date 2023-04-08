@@ -224,7 +224,7 @@ def log_in():
 
         if check_pwd_hash(user["password_hash"], password):
             if remember:
-                login_user(UserSQLite(user), remember=remember, duration=None)
+                login_user(UserSQLite(user), remember=remember, duration=None)  # it's ok, just to not forget
             else:
                 login_user(UserSQLite(user))
 

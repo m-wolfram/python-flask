@@ -24,7 +24,7 @@
 							  placeholder="Start writing your message..." id="exampleFormControlTextarea1"
 							  rows="2" name="msg_text">{{ msg_text if msg_text is not none }}</textarea>
 				</div>
-				<div class="card-footer bg-stripes-body text-center fs-6">
+				<div class="card-footer text-center bg-stripes-body fs-6">
 					<button type="submit" class="btn btn-primary btn-sm">Leave</button>
 				</div>
 			</form>
@@ -33,61 +33,15 @@
 	<!--Messages-->
 	<div class="card col-md-4 offset-md-4 mb-3">
 		<!--Messages header-->
-		<div class="card-header text-start bg-dark fs-6 mb-3">
+		<div class="card-header text-start bg-dark fs-6">
 			Messages
 		</div>
-		{% for post in posts %}
-			<div class="card ms-3 me-3 mb-3">
-				<div class="card-body">
-					<p class="card-text">{{ post["text"] }}</p>
-				</div>
-				<div class="card-footer d-flex align-items-end pt-1 pb-1">
-					<div class="me-auto">
-						<p class="card-text text-body-tertiary fs-6">
-							{{ post["username"] if post["username"] is not none else "DELETED"}},
-							<i>at</i> {{ post["date"][:-3] }}
-						</p>
-					</div>
-					<div id="like_{{ post['id'] }}">
-						{% include 'elements/likes_button.html' %}
-					</div>
-				</div>
-			</div>
-		{% endfor %}
-		<!--Pagination-->
-		<div class="card-footer bg-stripes-body" id="pagination-links">
-			<nav>
-				<ul class="pagination pagination-sm justify-content-center mb-0"
-					style="--bs-pagination-focus-box-shadow: none; --bs-pagination-color: none;">
-					<!--Previous page-->
-					<li class="page-item {% if not pagination.has_prev %} disabled {% endif %} shadow-none">
-						<a class="page-link" href="{{ url_for('leave_message', page=pagination.page-1) }}">
-							<span>&laquo;</span>
-						</a>
-					</li>
-					<!--Pages-->
-					{% for pagination_page in pagination.pages %}
-						{% if pagination_page == pagination.page %}
-							<li class="page-item active shadow-none" aria-current="page">
-								<span class="page-link">{{ pagination_page }}</span>
-							</li>
-						{% else %}
-							<li class="page-item shadow-none">
-								<a class="page-link"
-								   href="{{ url_for('leave_message', page=pagination_page) }}">{{ pagination_page }}
-								</a>
-							</li>
-						{% endif %}
-					{% endfor %}
-					<!--Next page-->
-					<li class="page-item {% if not pagination.has_next %} disabled {% endif %} shadow-none">
-						<a class="page-link" href="{{ url_for('leave_message', page=pagination.page+1) }}">
-							<span>&raquo;</span>
-						</a>
-					</li>
-				</ul>
-			</nav>
+		<div id="posts-container" class="card-body pb-0">
+		</div>
+		<div class="card-footer text-center bg-stripes-body" id="pagination-links">
+			<button id="load-more" type="submit" class="btn btn-primary btn-sm">Load more</button>
 		</div>
 	</div>
+	<script type="text/javascript" src="{{ url_for('static', filename='load_leave_message_posts.js') }}"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='update_post_likes.js') }}"></script>
 {% endblock %}

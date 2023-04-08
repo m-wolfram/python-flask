@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from flask import Flask, request, current_app, g, \
     url_for, render_template, make_response, redirect, abort, \
-    flash, session
+    flash, session, jsonify
 from flask_paginate import Pagination
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from util.check_password import generate_pwd_hash, check_pwd_hash
@@ -82,40 +82,9 @@ def leave_message():
     db = get_db()
     cur = db.cursor()
 
-    page = request.args.get("page", type=int, default=1)
-
     if request.method == "GET":
-        posts_count = cur.execute("SELECT COUNT(*) count from Posts").fetchone()["count"]
-        pagination = Pagination(page=page, per_page=app.config["POSTS_PER_PAGE"], total=posts_count)
-        if page not in pagination.pages:
-            abort(404)
-
-        page_posts_query_data = {
-            "limit": pagination.skip,
-            "offset": app.config["POSTS_PER_PAGE"],
-            "username": getattr(current_user, "username", "")
-        }
-        page_posts = cur.execute("""
-            WITH uid AS (SELECT id from users WHERE username=:username)
-
-            SELECT p.id id, username, text, date, COUNT(pl.id) likes,
-            CASE
-                WHEN ul.like_author_id=(SELECT * FROM uid) THEN 1
-                ELSE 0
-            END is_liked_by_current_user
-            FROM Posts p
-            LEFT JOIN users u ON p.author_id = u.id
-            LEFT JOIN posts_likes pl ON p.id = pl.post_id
-            LEFT JOIN 
-                (SELECT * FROM posts_likes pl
-                 WHERE like_author_id=(SELECT * FROM uid)) ul
-            ON p.id = ul.post_id
-            GROUP BY p.id
-            ORDER BY date DESC LIMIT :limit, :offset
-        """, page_posts_query_data).fetchall()
         prev_text = request.args.get("msg", None)
-        return render_template("pages/leave_message.html", msg_text=prev_text, page=page, posts=page_posts,
-                               pagination=pagination)
+        return render_template("pages/leave_message.html", msg_text=prev_text)
     elif request.method == "POST":
         msg_text = request.form["msg_text"]
 
@@ -135,19 +104,64 @@ def leave_message():
 
             app.logger.info("MSG FROM '{}': {}".format(getattr(current_user, "username", ""), msg_text))
             flash("Successfully sent!", category="success")
-            return redirect(url_for("leave_message", page=page if page > 1 else None))
+            return redirect(url_for("leave_message"))
         if len(msg_text) == 0:
-            msg_text = None
             flash("You did not enter message text.", category="danger")
-        return redirect(url_for("leave_message", page=page if page > 1 else None, msg=msg_text))
+        return redirect(url_for("leave_message"))
 
 
-@app.route("/leave_message/like", methods=["POST"])
+@app.route("/leave_message/posts", methods=["GET"])
+def leave_message_posts():
+    db = get_db()
+    cur = db.cursor()
+
+    page = request.args.get("page", "1")
+
+    page_posts_query_data = {
+        "limit": app.config["POSTS_PER_PAGE"],
+        "offset": (int(page)-1) * current_app.config["POSTS_PER_PAGE"],
+        "user_id": getattr(current_user, "id", "")
+    }
+    page_posts = cur.execute("""
+        SELECT p.id id, username, text, date, COUNT(pl.id) likes,
+        CASE
+            WHEN ul.like_author_id=:user_id THEN 1
+            ELSE 0
+        END is_liked_by_current_user
+        FROM Posts p
+        LEFT JOIN users u ON p.author_id = u.id
+        LEFT JOIN posts_likes pl ON p.id = pl.post_id
+        LEFT JOIN
+            (SELECT * FROM posts_likes pl
+             WHERE like_author_id=:user_id) ul
+        ON p.id = ul.post_id
+        GROUP BY p.id
+        ORDER BY date DESC LIMIT :offset, :limit
+    """, page_posts_query_data).fetchall()
+    return render_template("elements/leave_message_posts.html", posts=page_posts)
+
+
+@app.route("/leave_message/posts_parameters", methods=["GET"])
+def leave_message_posts_parameters():
+    db = get_db()
+    cur = db.cursor()
+
+    posts_count = cur.execute("SELECT COUNT(*) count from Posts").fetchone()["count"]
+
+    rsp = jsonify({
+        "posts_count": posts_count,
+        "posts_per_page": current_app.config["POSTS_PER_PAGE"]
+    })
+
+    return rsp
+
+
+@app.route("/leave_message/like", methods=["GET"])
 def leave_message_like():
     db = get_db()
     cur = db.cursor()
 
-    post_id = request.form.get("post_id", None)
+    post_id = request.args.get("post_id", None)
 
     # NOT FOR LOGIN_REQUIRED!
     if not current_user.is_authenticated:
@@ -437,5 +451,5 @@ with app.app_context():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000)
-    #app.run(host="0.0.0.0", port=5000, debug=False)
+    #app.run(host="127.0.0.1", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=False)

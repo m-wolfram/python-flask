@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="card col-md-2 offset-md-5 mb-3">
+        <div class="card-header text-center bg-dark fs-6 mb-3">
+            Login
+        </div>
+        <form method="post">
+            <div class="card-body ps-3 pe-3 pt-0 pb-0">
+                <div class="row g-2">
+                    <div class="col-md-12">
+                        <div class="bd-callout bd-callout-info mt-0 mb-0" style="font-size: .875rem;">
+                            <p class="mb-0">
+                                Don't have an account? Register <a href="/register" class="link-body">here.</a>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <p class="text-secondary fs-6 mb-0 pb-0">
+                            Account info
+                            <i class="bi bi-clipboard-fill"></i>
+                        </p>
+                    </div>
+                    <div class="col-md-12">
+                        <input class="form-control form-control-sm text-start rounded-start rounded-end" type="text"
+                               minlength="{{ config['USERNAME_MINLENGHT'] }}"
+                               maxlength="{{ config['USERNAME_MAXLENGHT'] }}"
+                               placeholder="Username" name="username"
+                               aria-describedby="toggle_password_addon1" required>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="input-group input-group-sm">
+                            <input class="form-control form-control-sm text-start rounded-start" type="password"
+                                   minlength="{{ config['PASSWORD_MINLENGHT'] }}"
+                                   maxlength="{{ config['PASSWORD_MAXLENGHT'] }}"
+                                   placeholder="Password" name="password" required>
+                            <span class="input-group-text rounded-end" id="toggle_password_addon1">
+                                <a href="" class="toggle_hide_password link-secondary">
+                                    <i class="bi bi-eye-slash-fill" aria-hidden="true"></i>
+                                </a>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-12 mt-1">
+                        <div class="form-check text-start mt-0 mb-0">
+                            <input class="form-check-input" type="checkbox" value="True"
+                                   id="remember" name="remember">
+                            <label class="form-check-label text-body-secondary"
+                                   style="font-size: 0.875rem;" for="remember">Remember me</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer fs-6 mt-3 bg-stripes-body">
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-sm">Log in</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script type="text/javascript" src="{{ url_for('static', filename='show_password.js') }}"></script>
+{% endblock %}

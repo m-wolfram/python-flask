@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+
+{% if not validations %}
+    {% set first_name_validation = "" %}
+    {% set last_name_validation = "" %}
+    {% set gender_validation = "" %}
+    {% set birthdate_day_validation = "" %}
+    {% set birthdate_month_validation = "" %}
+    {% set birthdate_year_validation = "" %}
+    {% set username_validation = "" %}
+    {% set password_validation = "" %}
+    {% set repeat_password_validation = "" %}
+    {% set bio_validation = "" %}
+    {# feedbacks #}
+    {% set first_name_feedback = "" %}
+    {% set last_name_feedback = "" %}
+    {% set gender_feedback = "" %}
+    {% set birthdate_day_feedback = "" %}
+    {% set birthdate_month_feedback = "" %}
+    {% set birthdate_year_feedback = "" %}
+    {% set username_feedback = "" %}
+    {% set password_feedback = "" %}
+    {% set repeat_password_feedback = "" %}
+    {% set bio_feedback = "" %}
+{% else %}
+    {% set first_name_validation = "is-invalid" if not validations["first_name"]["check"] else "is-valid" %}
+    {% set last_name_validation = "is-invalid" if not validations["last_name"]["check"] else "is-valid" %}
+    {% set gender_validation = "is-invalid" if not validations["gender"]["check"] else "is-valid" %}
+    {% set birthdate_day_validation = "is-invalid" if not validations["birthdate_day"]["check"] else "is-valid" %}
+    {% set birthdate_month_validation = "is-invalid" if not validations["birthdate_month"]["check"] else "is-valid" %}
+    {% set birthdate_year_validation = "is-invalid" if not validations["birthdate_year"]["check"] else "is-valid" %}
+    {% set username_validation = "is-invalid" if not validations["username"]["check"] else "is-valid" %}
+    {% set password_validation = "is-invalid" if not validations["password"]["check"] else "is-valid" %}
+    {% set repeat_password_validation = "is-invalid" if not validations["repeat_password"]["check"] else "is-valid" %}
+    {% set bio_validation = "is-invalid" if not validations["bio"]["check"] else "is-valid" %}
+    {# feedbacks #}
+    {% set first_name_feedback = validations["first_name"]["feedback"] %}
+    {% set last_name_feedback = validations["last_name"]["feedback"] %}
+    {% set gender_feedback = validations["gender"]["feedback"] %}
+    {% set birthdate_day_feedback = validations["birthdate_day"]["feedback"] %}
+    {% set birthdate_month_feedback = validations["birthdate_month"]["feedback"] %}
+    {% set birthdate_year_feedback = validations["birthdate_year"]["feedback"] %}
+    {% set username_feedback = validations["username"]["feedback"] %}
+    {% set password_feedback = validations["password"]["feedback"] %}
+    {% set repeat_password_feedback = validations["repeat_password"]["feedback"] %}
+    {% set bio_feedback = validations["bio"]["feedback"] %}
+{% endif %}
+
+{% block content %}
+    <div class="card col-md-4 offset-md-4 mb-3">
+        <div class="card-header text-center bg-dark fs-6 mb-3">
+            Register
+        </div>
+        <form method="post">
+            <div class="card-body ps-3 pe-3 pt-0 pb-0">
+                <div class="row g-2">
+                    <div class="col-md-12">
+                        <div class="bd-callout bd-callout-info mt-0 mb-0" style="font-size: .875rem;">
+                            <strong>Password</strong> must be 8-20 characters long, include lower-case, upper-case,
+                            numeric and special characters $, @, #, %, _ and must not contain whitespaces.
+                        </div>
+                    </div>
+                    <!--Name, last name and gender-->
+                    <div class="col-md-12">
+                        <p class="text-secondary fs-6 mb-0 pb-0">Name and gender</p>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control form-control-sm {{ first_name_validation }}"
+                               id="validationFirstName" name="first_name"
+                               placeholder="First name" minlength="{{ config['FIRST_NAME_MINLENGHT'] }}"
+                               maxlength="{{ config['FIRST_NAME_MAXLENGHT'] }}"
+                               value="{{ form.first_name if form is defined }}" required>
+                        <div class="invalid-feedback">
+                            {{ first_name_feedback }}
+                        </div>
+                        <div class="valid-feedback">
+                            {{ first_name_feedback }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control form-control-sm {{ last_name_validation }}"
+                               id="validationLastName" name="last_name" placeholder="Last name"
+                               minlength="{{ config['LAST_NAME_MINLENGHT'] }}"
+                               maxlength="{{ config['LAST_NAME_MAXLENGHT'] }}"
+                               value="{{ form.last_name if form is defined }}" required>
+                        <div class="invalid-feedback">
+                            {{ last_name_feedback }}
+                        </div>
+                        <div class="valid-feedback">
+                            {{ last_name_feedback }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select form-select-sm {{ gender_validation }}"
+                                id="validationGender" name="gender" required>
+                            {% if form is defined %}
+                                <option disabled value="">Gender</option>
+                            {% else %}
+                                <option selected disabled value="">Gender</option>
+                            {% endif %}
+                            {% for gender in config['REGISTRATION_GENDERS'] %}
+                                {% if form is defined and form.gender == gender %}
+                                    <option selected="selected">{{ gender }}</option>
+                                {% else %}
+                                    <option>{{ gender }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">
+                            {{ gender_feedback }}
+                        </div>
+                        <div class="valid-feedback">
+                            {{ gender_feedback }}
+                        </div>
+                    </div>
+                    <!--Birthdate-->
+                    <div class="col-md-12">
+                        <p class="text-secondary fs-6 mb-0 pb-0">
+                            Birthdate
+                            <i class="bi bi-balloon-fill" aria-hidden="true"></i>
+                        </p>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select form-select-sm {{ birthdate_day_validation }}"
+                                id="validationBirthdateDay" name="birthdate_day" required>
+                            {% if form is defined %}
+                                <option disabled value="">Day</option>
+                            {% else %}
+                                <option selected disabled value="">Day</option>
+                            {% endif %}
+                            {% for i in range(1, 31+1) %}
+                                {% if form is defined and form.birthdate_day == i|string %}
+                                    <option selected="selected">{{ i }}</option>
+                                {% else %}
+                                    <option>{{ i }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">
+                            {{ birthdate_day_feedback }}
+                        </div>
+                        <div class="valid-feedback">
+                            {{ birthdate_day_feedback }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <select class="form-select form-select-sm {{ birthdate_month_validation }}"
+                                id="validationBirthdayMonth" name="birthdate_month" required>
+                            {% if form is defined %}
+                                <option disabled value="">Month</option>
+                            {% else %}
+                                <option selected disabled value="">Month</option>
+                            {% endif %}
+                            {% for month in config['REGISTRATION_MONTHS'].values() %}
+                                {% if form is defined and form.birthdate_month == month %}
+                                    <option selected="selected">{{ month }}</option>
+                                {% else %}
+                                    <option>{{ month }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">
+                            {{ birthdate_month_feedback }}
+                        </div>
+                        <div class="valid-feedback">
+                            {{ birthdate_month_feedback }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select form-select-sm {{ birthdate_year_validation }}"
+                                id="validationBirthdateYear" name="birthdate_year" required>
+                            {% if form is defined %}
+                                <option disabled value="">Year</option>
+                            {% else %}
+                                <option selected disabled value="">Year</option>
+                            {% endif %}
+                            {% for year in config['REGISTRATION_YEARS'] %}
+                                {% if form is defined and form.birthdate_year == year|string %}
+                                    <option selected="selected">{{ year }}</option>
+                                {% else %}
+                                    <option>{{ year }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">
+                            {{ birthdate_year_feedback }}
+                        </div>
+                        <div class="valid-feedback">
+                            {{ birthdate_year_feedback }}
+                        </div>
+                    </div>
+                    <!--Identity-->
+                    <div class="col-md-12">
+                        <p class="text-secondary fs-6 mb-0 pb-0">Account info</p>
+                    </div>
+                    <!--Phone-->
+                    <div class="col-md-12">
+                        <input type="text" class="form-control form-control-sm" id="validationPhoneNumber"
+                               name="phone_number" placeholder="Phone number" required disabled>
+                        <div class="invalid-feedback">
+                            Looks good!
+                        </div>
+                    </div>
+                    <!--Email-->
+                    <div class="col-md-12">
+                        <input type="text" class="form-control form-control-sm"
+                               id="validationEmailAddress" name="email_address"
+                               placeholder="E-mail address" required disabled>
+                        <div class="invalid-feedback">
+                            Looks good!
+                        </div>
+                    </div>
+                    <!--Username-->
+                    <div class="col-md-12">
+                        <input type="text" class="form-control form-control-sm {{ username_validation }}"
+                               id="validationUsername" name="username" placeholder="Username"
+                               minlength="{{ config['USERNAME_MINLENGHT'] }}"
+                               maxlength="{{ config['USERNAME_MAXLENGHT'] }}"
+                               value="{{ form.username if form is defined }}" required>
+                        <div class="invalid-feedback">
+                            {{ username_feedback }}
+                        </div>
+                        <div class="valid-feedback">
+                            {{ username_feedback }}
+                        </div>
+                    </div>
+                    <!--Password-->
+                    <div class="col-md-6">
+                        <div class="input-group input-group-sm has-validation">
+                            <input type="password"
+                                   class="form-control form-control-sm rounded-start {{ password_validation }}"
+                                   id="validationPassword" name="password" placeholder="Password"
+                                   minlength="{{ config['PASSWORD_MINLENGHT'] }}"
+                                   maxlength="{{ config['PASSWORD_MAXLENGHT'] }}"
+                                   value="{{ form.password if form is defined }}"
+                                   aria-describedby="toggle_password_addon1" required>
+                            <span class="input-group-text rounded-end" id="toggle_password_addon1">
+                                <a href="" class="toggle_hide_password link-secondary">
+                                    <i class="bi bi-eye-slash-fill" aria-hidden="true"></i>
+                                </a>
+                            </span>
+                            <div class="invalid-feedback">
+                                {{ password_feedback }}
+                            </div>
+                            <div class="valid-feedback">
+                                {{ password_feedback }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group input-group-sm has-validation">
+                            <input type="password"
+                                   class="form-control form-control-sm rounded-start {{ repeat_password_validation }}"
+                                   id="validationRepeatPassword" name="repeat_password" placeholder="Repeat password"
+                                   minlength="{{ config['PASSWORD_MINLENGHT'] }}"
+                                   maxlength="{{ config['PASSWORD_MAXLENGHT'] }}"
+                                   value="{{ form.repeat_password if form is defined }}"
+                                   aria-describedby="toggle_password_addon2" required>
+                            <span class="input-group-text rounded-end" id="toggle_password_addon2">
+                                <a href="#" class="toggle_hide_password link-secondary">
+                                    <i class="bi bi-eye-slash-fill" aria-hidden="true"></i>
+                                </a>
+                            </span>
+                            <div class="invalid-feedback">
+                                {{ repeat_password_feedback }}
+                            </div>
+                            <div class="valid-feedback">
+                                {{ repeat_password_feedback }}
+                            </div>
+                        </div>
+                    </div>
+                    <!--Bio-->
+                    <div class="col-md-12">
+                        <textarea class="form-control form-control-sm {{ bio_validation }}"
+                                  placeholder="Some information about you..." id="validationBio" name="bio" rows="2"
+                                  maxlength="{{ config['BIO_MAXLENGHT'] }}">{{ form.bio if form is defined }}</textarea>
+                        <div class="invalid-feedback">
+                            {{ bio_feedback }}
+                        </div>
+                        <div class="valid-feedback">
+                            {{ bio_feedback }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-stripes-body text-center fs-6 mt-3">
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-sm">Register</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script type="text/javascript" src="{{ url_for('static', filename='show_password.js') }}"></script>
+{% endblock %}

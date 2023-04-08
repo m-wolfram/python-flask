@@ -1,0 +1,16 @@
+.no-underline {
+    text-decoration: none;
+}
+
+.link-body {
+    color: #adb5bd!important;
+}
+
+.link-body:hover {
+    color: #d7dbdf!important;
+}
+
+.bg-stripes-body {
+    background-image: linear-gradient(135deg, #212529 8.33%, #252a2e 8.33%, #252a2e 50%, #212529 50%, #212529 58.33%, #252a2e 58.33%, #252a2e 100%);
+    background-size: 8.49px 8.49px;
+}

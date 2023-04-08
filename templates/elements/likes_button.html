@@ -1,0 +1,8 @@
+<button class="btn btn-link no-underline {% if post['is_liked_by_current_user'] %} link-danger {% else %} link-secondary {% endif %}"
+	style="--bs-btn-padding-x: none; --bs-btn-padding-y: none;"	page="{{ page }}"
+	post_id="{{ post['id'] }}" {% if not current_user.is_authenticated %} disabled {% endif %}>
+	<svg class="bi flex-shrink-0 me-1" role="img">
+		<use xlink:href="#heart-fill"/>
+	</svg>
+	{{ post["likes"] }}
+</button>

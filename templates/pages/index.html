@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <p class="text-center fs-5">Welcome to my website</p>
+{% endblock %}
+
+{% block content %}
+    {% with username = current_user.username %}
+        {% if username %}
+            <p class="text-center fs-6 text-success">You are logged in as {{ username }}.</p>
+        {% else %}
+            <p class="text-center fs-6 text-body-tertiary">You are not logged in.</p>
+        {% endif %}
+    {% endwith %}
+{% endblock %}

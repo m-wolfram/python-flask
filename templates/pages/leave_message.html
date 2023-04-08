@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block content %}
+	<!--Send form-->
+	<div class="card text-center justify-content-center col-md-4 offset-md-4 mb-3">
+		<div class="card-header text-center bg-dark fs-6 mb-3 ">
+			Leave your message here
+		</div>
+		{% if not current_user.is_authenticated %}
+			<div class="card-body ps-3 pe-3 pt-0 pb-0">
+				<div class="card card-body mb-3 bg-body-secondary border border-secondary-subtle"
+					 style="font-size: .875rem;">
+					<p class="mb-0">
+						Leaving a message is <a href="{{ url_for('log_in', next=url_for('leave_message')) }}"
+												class="link-body"
+												style="color: var(--bs-body-color);">log in</a> required.
+					</p>
+				</div>
+			</div>
+		{% else %}
+			<form method="post">
+				<div class="card-body ps-3 pe-3 pt-0 pb-0">
+					<textarea class="form-control mb-3" maxlength="{{ config['POST_MAXLENGHT'] }}"
+							  placeholder="Start writing your message..." id="exampleFormControlTextarea1"
+							  rows="2" name="msg_text">{{ msg_text if msg_text is not none }}</textarea>
+				</div>
+				<div class="card-footer bg-stripes-body text-center fs-6">
+					<button type="submit" class="btn btn-primary btn-sm">Leave</button>
+				</div>
+			</form>
+		{% endif %}
+	</div>
+	<!--Messages-->
+	<div class="card col-md-4 offset-md-4 mb-3">
+		<!--Messages header-->
+		<div class="card-header text-start bg-dark fs-6 mb-3">
+			Messages
+		</div>
+		{% for post in posts %}
+			<div class="card ms-3 me-3 mb-3">
+				<div class="card-body">
+					<p class="card-text">{{ post["text"] }}</p>
+				</div>
+				<div class="card-footer d-flex align-items-end pt-1 pb-1">
+					<div class="me-auto">
+						<p class="card-text text-body-tertiary fs-6">
+							{{ post["username"] if post["username"] is not none else "DELETED"}},
+							<i>at</i> {{ post["date"][:-3] }}
+						</p>
+					</div>
+					<div id="like_{{ post['id'] }}">
+						{% include 'elements/likes_button.html' %}
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+		<!--Pagination-->
+		<div class="card-footer bg-stripes-body" id="pagination-links">
+			<nav>
+				<ul class="pagination pagination-sm justify-content-center mb-0"
+					style="--bs-pagination-focus-box-shadow: none; --bs-pagination-color: none;">
+					<!--Previous page-->
+					<li class="page-item {% if not pagination.has_prev %} disabled {% endif %} shadow-none">
+						<a class="page-link" href="{{ url_for('leave_message', page=pagination.page-1) }}">
+							<span>&laquo;</span>
+						</a>
+					</li>
+					<!--Pages-->
+					{% for pagination_page in pagination.pages %}
+						{% if pagination_page == pagination.page %}
+							<li class="page-item active shadow-none" aria-current="page">
+								<span class="page-link">{{ pagination_page }}</span>
+							</li>
+						{% else %}
+							<li class="page-item shadow-none">
+								<a class="page-link"
+								   href="{{ url_for('leave_message', page=pagination_page) }}">{{ pagination_page }}
+								</a>
+							</li>
+						{% endif %}
+					{% endfor %}
+					<!--Next page-->
+					<li class="page-item {% if not pagination.has_next %} disabled {% endif %} shadow-none">
+						<a class="page-link" href="{{ url_for('leave_message', page=pagination.page+1) }}">
+							<span>&raquo;</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+	<script type="text/javascript" src="{{ url_for('static', filename='update_post_likes.js') }}"></script>
+{% endblock %}

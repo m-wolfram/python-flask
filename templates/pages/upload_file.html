@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block header %}
+	<p class="text-center fs-5">Upload your file here</p>
+{% endblock %}
+
+{% block content %}
+<div class="text-center justify-content-center col-md-4 offset-md-4 mt-3">
+	<form method="post" enctype="multipart/form-data">
+		<input class="form-control form-control-sm mb-3" type="file" id="formFile" name="outcoming_file">
+		<button type="submit" class="btn btn-sm btn-primary">Upload</button>
+	</form>
+</div>
+{% endblock %}

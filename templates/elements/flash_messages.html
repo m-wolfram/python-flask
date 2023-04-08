@@ -1,0 +1,31 @@
+{% with messages = get_flashed_messages(with_categories=True) %}
+	{% if messages %}
+		{% for category, message in messages %}
+			{% if category in ["info"] %}
+				{% set symbol = "info-fill" %}
+			{% elif category in ["danger", "warning"] %}
+				{% set symbol = "exclamation-triangle-fill" %}
+			{% elif category in ["success"] %}
+				{% set symbol = "check-circle-fill" %}
+			{% else %}
+				{% set symbol = "exclamation-circle-fill" %}
+			{% endif %}
+
+			<div class="alert alert-{{ category }} fade show d-flex align-items-center col-md-4 offset-md-4 mt-2 mb-2"
+				 id="alert" role="alert" style="--bs-alert-padding-x: .1rem;--bs-alert-padding-y: .1rem;">
+				<div>
+					<svg class="bi flex-shrink-0 ms-2 me-2" role="img">
+						<use xlink:href="#{{ symbol }}"/>
+					</svg>
+				</div>
+				<div>
+					{{ message }}
+				</div>
+				<div class="ms-auto">
+					<button aria-label="Close" class="btn-close shadow-none ms-2 me-2 mb-2" data-bs-dismiss="alert"
+							style="width: 0.25rem; height: 0.25rem;" type="button"></button>
+				</div>
+			</div>
+		{% endfor %}
+	{% endif %}
+{% endwith %}

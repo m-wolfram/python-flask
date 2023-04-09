@@ -3,7 +3,7 @@
 {% block content %}
 	<!--Send form-->
 	<div class="card text-center justify-content-center col-md-4 offset-md-4 mb-3">
-		<div class="card-header text-center bg-dark fs-6 mb-3 ">
+		<div class="card-header text-center bg-dark fs-6 mb-3">
 			Leave your message here
 		</div>
 		{% if not current_user.is_authenticated %}
@@ -18,14 +18,25 @@
 				</div>
 			</div>
 		{% else %}
-			<form method="post">
+			<form method="post" id="send_message_form">
 				<div class="card-body ps-3 pe-3 pt-0 pb-0">
 					<textarea class="form-control mb-3" maxlength="{{ config['POST_MAXLENGHT'] }}"
-							  placeholder="Start writing your message..." id="exampleFormControlTextarea1"
-							  rows="2" name="msg_text">{{ msg_text if msg_text is not none }}</textarea>
+							  placeholder="Start writing your message..." id="leave_message_textarea1"
+							  rows="3" name="msg_text">{{ msg_text if msg_text is not none }}</textarea>
 				</div>
-				<div class="card-footer text-center bg-stripes-body fs-6">
-					<button type="submit" class="btn btn-primary btn-sm">Leave</button>
+				<div class="card-footer bg-stripes-body fs-6">
+					<div class="row g-0 align-items-center">
+						<div class="col-md-4 text-start">
+							<button type="button" class="btn btn-warning btn-sm px-1 py-0" id="clear_send_message_form">
+								<svg class="bi flex-shrink-0" role="img">
+									<use xlink:href="#trash-fill"/>
+								</svg>
+							</button>
+						</div>
+						<div class="col-md-4 text-center">
+							<button type="submit" class="btn btn-primary btn-sm">Leave</button>
+						</div>
+					</div>
 				</div>
 			</form>
 		{% endif %}
@@ -38,10 +49,24 @@
 		</div>
 		<div id="posts-container" class="card-body pb-0">
 		</div>
-		<div class="card-footer text-center bg-stripes-body" id="pagination-links">
-			<button id="load-more" type="submit" class="btn btn-primary btn-sm">Load more</button>
+		<div class="card-footer bg-stripes-body">
+			<div class="row g-0 align-items-center">
+				<div class="col-md-4 offset-md-4 text-center">
+					<button id="load-more" type="button" class="btn btn-primary btn-sm">Load more</button>
+				</div>
+				<div class="col-md-4 text-end">
+					<span>
+						<span id="posts-count"></span> out of
+						<span id="posts-total"></span> messages
+					</span>
+				</div>
+			</div>
 		</div>
 	</div>
+	{% if current_user.is_authenticated %}
+		<script type="text/javascript" src="{{ url_for('static', filename='reset_leave_message_form.js') }}">
+		</script>
+	{% endif %}
 	<script type="text/javascript" src="{{ url_for('static', filename='load_leave_message_posts.js') }}"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='update_post_likes.js') }}"></script>
 {% endblock %}

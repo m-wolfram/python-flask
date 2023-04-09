@@ -51,7 +51,7 @@
         <div class="card-header text-center bg-dark fs-6 mb-3">
             Register
         </div>
-        <form method="post">
+        <form method="post" id="registration_form">
             <div class="card-body ps-3 pe-3 pt-0 pb-0">
                 <div class="row g-2">
                     <div class="col-md-12">
@@ -284,11 +284,21 @@
                 </div>
             </div>
             <div class="card-footer bg-stripes-body text-center fs-6 mt-3">
-                <div class="text-center">
-                    <button type="submit" class="btn btn-primary btn-sm">Register</button>
+                <div class="row g-0 align-items-center">
+                    <div class="col-md-4 text-start">
+                        <button type="button" class="btn btn-warning btn-sm px-1 py-0" id="reset_registration_form">
+                            <svg class="bi flex-shrink-0" role="img">
+                                <use xlink:href="#trash-fill"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <button type="submit" class="btn btn-primary btn-sm">Register</button>
+                    </div>
                 </div>
             </div>
         </form>
     </div>
+    <script type="text/javascript" src="{{ url_for('static', filename='reset_registration_form.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='show_password.js') }}"></script>
 {% endblock %}

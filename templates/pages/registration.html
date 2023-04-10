@@ -288,7 +288,7 @@
                     <div class="col-md-4 text-start">
                         <button type="button"
                                 class="btn btn-sm btn-secondary px-1 py-0"
-                                id="reset_registration_form">
+                                onclick="resetForm('registration_form')">
                             <svg class="bi flex-shrink-0" role="img">
                                 <use xlink:href="#trash-fill"/>
                             </svg>
@@ -301,6 +301,6 @@
             </div>
         </form>
     </div>
-    <script type="text/javascript" src="{{ url_for('static', filename='reset_registration_form.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='reset_form.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='show_password.js') }}"></script>
 {% endblock %}

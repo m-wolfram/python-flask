@@ -5,7 +5,7 @@
         <div class="card-header text-center bg-dark fs-6 mb-3">
             Login
         </div>
-        <form method="post" id="log_in_form">
+        <form method="post" id="login_form">
             <div class="card-body ps-3 pe-3 pt-0 pb-0">
                 <div class="row g-2">
                     <div class="col-md-12">
@@ -54,7 +54,8 @@
             <div class="card-footer fs-6 mt-3 bg-stripes-body">
                 <div class="row g-0 align-items-center">
                     <div class="col-md-4 text-start">
-                        <button type="button" class="btn btn-sm btn-secondary px-1 py-0" id="reset_log_in_form">
+                        <button type="button" class="btn btn-sm btn-secondary px-1 py-0"
+                                onclick="resetForm('login_form')">
                             <svg class="bi flex-shrink-0" role="img">
                                 <use xlink:href="#trash-fill"/>
                             </svg>
@@ -67,6 +68,6 @@
             </div>
         </form>
     </div>
-    <script type="text/javascript" src="{{ url_for('static', filename='reset_log_in_form.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='reset_form.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='show_password.js') }}"></script>
 {% endblock %}

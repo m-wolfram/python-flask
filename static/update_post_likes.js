@@ -3,7 +3,7 @@ $(document).ready(function() {
         const post_id = $(this).attr('post_id');
 
         request = $.ajax({
-            url: '/leave_message/like',
+            url: '/leave_message/posts/like',
             type: 'GET',
             data: {
                 post_id: post_id

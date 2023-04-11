@@ -1,7 +1,14 @@
 {% for post in posts %}
-    <div class="card mb-3">
+    <div class="card mb-3" id="post{{ post['id'] }}">
         <div class="card-body">
-            <p class="card-text">{{ post["text"] }}</p>
+            <div class="d-flex justify-content-between">
+                <p class="card-text my-0">{{ post["text"] }}</p>
+                {% if post["username"] == current_user.username %}
+                    <button type="button" class="btn btn-sm btn-close shadow-none"
+                            style="width: 0.25rem; height: 0.25rem;"
+                            aria-label="Close"></button>
+                {% endif %}
+            </div>
         </div>
         <div class="card-footer d-flex align-items-end pt-1 pb-1">
             <div class="me-auto">

@@ -110,7 +110,7 @@ def leave_message():
         return redirect(url_for("leave_message"))
 
 
-@app.route("/leave_message/posts", methods=["GET"])
+@app.route("/leave_message/posts/load_posts", methods=["GET"])
 def leave_message_posts():
     db = get_db()
     cur = db.cursor()
@@ -141,7 +141,14 @@ def leave_message_posts():
     return render_template("elements/leave_message_posts.html", posts=page_posts)
 
 
-@app.route("/leave_message/posts_parameters", methods=["GET"])
+@app.route("/leave_message/posts/delete/<int:post_id>", methods=["GET", "DELETE"])
+def leave_message_delete_post(post_id):
+    print("post_id", post_id)
+    print("req method:", request.method)
+    return "OK"
+
+
+@app.route("/leave_message/posts/parameters", methods=["GET"])
 def leave_message_posts_parameters():
     db = get_db()
     cur = db.cursor()
@@ -156,7 +163,7 @@ def leave_message_posts_parameters():
     return rsp
 
 
-@app.route("/leave_message/like", methods=["GET"])
+@app.route("/leave_message/posts/like", methods=["GET"])
 def leave_message_like():
     db = get_db()
     cur = db.cursor()
@@ -451,5 +458,5 @@ with app.app_context():
 
 
 if __name__ == "__main__":
-    #app.run(host="127.0.0.1", port=5000)
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="127.0.0.1", port=5000)
+    #app.run(host="0.0.0.0", port=5000, debug=False)

@@ -8,7 +8,7 @@ let currentPage = 1;
 
 window.onload = function() {
     $.ajax({
-        url: '/leave_message/posts_parameters',
+        url: '/leave_message/posts/parameters',
         type: 'GET'
     })
     .done(function(data) {
@@ -17,7 +17,7 @@ window.onload = function() {
         const pagesCount = Math.ceil(postsCount / postsPerPage);
 
         $.ajax({
-            url: '/leave_message/posts',
+            url: '/leave_message/posts/load_posts',
             type: 'GET',
             data: {
                 page: currentPage
@@ -33,7 +33,7 @@ window.onload = function() {
             currentPage += 1;
 
             $.ajax({
-                url: '/leave_message/posts',
+                url: '/leave_message/posts/load_posts',
                 type: 'GET',
                 data: {
                     page: currentPage

@@ -1,16 +1,10 @@
 $(document).ready(function() {
-  // target the link
-  $(".toggle_hide_password").on('click', function(e) {
-    e.preventDefault()
-    // get input group of clicked link
-    var input_group = $(this).closest('.input-group')
-    // find the input, within the input group
-    var input = input_group.find('input.form-control')
-    // find the icon, within the input group
-    var icon = input_group.find('i')
-    // toggle field type
-    input.attr('type', input.attr("type") === "text" ? 'password' : 'text')
-    // toggle icon class
-    icon.toggleClass('bi-eye-slash-fill bi-eye-fill')
-  })
+    $(".toggle_hide_password").on('click', function(e) {
+        e.preventDefault()
+        let input_group = $(this).closest('.input-group')
+        let input = input_group.find('input.form-control')
+        let icon = input_group.find('i')
+        input.attr('type', input.attr("type") === "text" ? 'password' : 'text')
+        icon.toggleClass('bi-eye-slash-fill bi-eye-fill')
+    })
 })

@@ -180,9 +180,9 @@ def leave_message_delete_post(post_id):
 
     post_author_id = cur.execute("""
         SELECT author_id FROM posts WHERE id=?
-    """, [post_id]).fetchone()["author_id"]
+    """, [post_id]).fetchone()
 
-    if current_user.is_authenticated and current_user.id == post_author_id:
+    if post_author_id is not None and current_user.is_authenticated and current_user.id == post_author_id["author_id"]:
         cur.execute("""
             DELETE FROM posts WHERE id=?
         """, [post_id])

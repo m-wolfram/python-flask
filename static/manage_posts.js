@@ -18,7 +18,7 @@ window.onload = function() {
         type: 'GET'
     })
     .done(function(data) {
-        // first page load
+        // on first page load
         const postsCount = data["posts_count"];
         const postsPerPage = data["posts_per_page"];
         const pagesCount = Math.ceil(postsCount / postsPerPage);
@@ -36,7 +36,7 @@ window.onload = function() {
             cardTotalElem.innerHTML = postsCount;
         });
 
-        // load more script
+        // load more
         if (pagesCount <= 1) {
             switchLoadMoreButton()
         };
@@ -53,21 +53,21 @@ window.onload = function() {
             })
             .done(function(data) {
                 cardContainer.innerHTML += data;
+                cardCountElem.innerHTML = cardContainer.childElementCount;
                 if (currentPage === pagesCount) {
                     switchLoadMoreButton()
                 };
-                cardCountElem.innerHTML = cardContainer.childElementCount;
             });
         });
 
-        // delete post script
+        // delete post button
         $(document).on('click', '.btn-sm.btn-close.shadow-none', function() {
             let postCard = $(this).closest('.card.mb-3');
-            let postID = postCard.attr('id').match(/post(\d+)/)[1]; // getting post id
+            let postID = postCard.attr('id').match(/post(\d+)/)[1]; // get post id
 
             $.ajax({
                 url: '/leave_message/posts/delete/' + postID,
-                type: 'DELETE',
+                type: 'DELETE'
             })
             .done(function() {
                 postCard.remove();

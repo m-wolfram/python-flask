@@ -14,3 +14,7 @@
     background-image: linear-gradient(135deg, #212529 8.33%, #252a2e 8.33%, #252a2e 50%, #212529 50%, #212529 58.33%, #252a2e 58.33%, #252a2e 100%);
     background-size: 8.49px 8.49px;
 }
+
+.tooltip-body {
+  --bs-tooltip-bg: var(--bs-body-color);
+}

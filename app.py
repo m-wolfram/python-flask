@@ -92,7 +92,7 @@ def leave_message():
             data = {
                 "author": getattr(current_user, "username", ""),
                 "text": msg_text,
-                "date": datetime.now().strftime("%m.%d.%Y %H:%M:%S")
+                "date": datetime.now().strftime("%d.%m.%Y %H:%M:%S")
             }
             cur.execute("""
                 INSERT INTO Posts (author_id, text, date)
@@ -110,16 +110,48 @@ def leave_message():
         return redirect(url_for("leave_message"))
 
 
+@app.route("/leave_message/posts/parameters", methods=["GET"])
+def leave_message_posts_parameters():
+    db = get_db()
+    cur = db.cursor()
+
+    posts_count = cur.execute("SELECT COUNT(*) count from Posts").fetchone()["count"]
+
+    rsp = jsonify({
+        "posts_count": posts_count,
+        "posts_per_page": current_app.config["POSTS_PER_PAGE"]
+    })
+
+    return rsp
+
+
 @app.route("/leave_message/posts/load_posts", methods=["GET"])
 def leave_message_posts():
     db = get_db()
     cur = db.cursor()
 
-    page = request.args.get("page", "1")
+    page = request.args.get("page", "1", int)
+    post_index = request.args.get("index", None, int)
+
+    posts_per_page = current_app.config["POSTS_PER_PAGE"]
+    page_offset = (page-1) * posts_per_page
+
+    if post_index is not None:
+        if abs(post_index) in range(posts_per_page):
+            if post_index >= 0:
+                offset = page_offset + post_index
+            else:
+                offset = page_offset + (posts_per_page - abs(post_index))
+        else:
+            abort(400, "Incorrect index.")
+        limit = 1
+    else:
+        offset = page_offset
+        limit = app.config["POSTS_PER_PAGE"]
 
     page_posts_query_data = {
-        "limit": app.config["POSTS_PER_PAGE"],
-        "offset": (int(page)-1) * current_app.config["POSTS_PER_PAGE"],
+        "offset": offset,
+        "limit": limit,
         "user_id": getattr(current_user, "id", "")
     }
     page_posts = cur.execute("""
@@ -141,26 +173,25 @@ def leave_message_posts():
     return render_template("elements/leave_message_posts.html", posts=page_posts)
 
 
-@app.route("/leave_message/posts/delete/<int:post_id>", methods=["GET", "DELETE"])
+@app.route("/leave_message/posts/delete/<int:post_id>", methods=["DELETE"])
 def leave_message_delete_post(post_id):
-    print("post_id", post_id)
-    print("req method:", request.method)
-    return "OK"
-
-
-@app.route("/leave_message/posts/parameters", methods=["GET"])
-def leave_message_posts_parameters():
     db = get_db()
     cur = db.cursor()
 
-    posts_count = cur.execute("SELECT COUNT(*) count from Posts").fetchone()["count"]
+    post_author_id = cur.execute("""
+        SELECT author_id FROM posts WHERE id=?
+    """, [post_id]).fetchone()["author_id"]
 
-    rsp = jsonify({
-        "posts_count": posts_count,
-        "posts_per_page": current_app.config["POSTS_PER_PAGE"]
-    })
-
-    return rsp
+    if current_user.is_authenticated and current_user.id == post_author_id:
+        cur.execute("""
+            DELETE FROM posts WHERE id=?
+        """, [post_id])
+        db.commit()
+        return jsonify({
+            "deleted_post_id": post_id
+        })
+    else:
+        abort(400)
 
 
 @app.route("/leave_message/posts/like", methods=["GET"])

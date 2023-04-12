@@ -1,6 +1,11 @@
-<button class="btn btn-link no-underline {% if post['is_liked_by_current_user'] %} link-danger {% else %} link-secondary {% endif %}"
-	style="--bs-btn-padding-x: none; --bs-btn-padding-y: none;"	page="{{ page }}"
-	post_id="{{ post['id'] }}" {% if not current_user.is_authenticated %} disabled {% endif %}>
+{% set is_liked_color = 'link-danger' if post['is_liked_by_current_user'] else 'link-secondary' %}
+{% set is_disabled = 'disabled' if not current_user.is_authenticated else '' %}
+
+
+<button class="btn btn-link no-underline {{ is_liked_color }}"
+	style="--bs-btn-padding-x: none; --bs-btn-padding-y: none;"
+		page="{{ page }}"
+		post_id="{{ post['id'] }}" {{ is_disabled }}>
 	<svg class="bi flex-shrink-0 me-1" role="img">
 		<use xlink:href="#heart-fill"/>
 	</svg>

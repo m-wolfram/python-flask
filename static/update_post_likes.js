@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    $(document).on('click', '.btn-link', function() {
+    $(document).on('click', '.btn-link.no-underline', function() {
         const post_id = $(this).attr('post_id');
 
         request = $.ajax({

@@ -6,7 +6,7 @@ class ConfigDefault:
     SECRET_KEY = b"\xd2l\x1c\xa3\x0c\xc4\x91\x19\xbb\xf3\x15\xfe\xfc\xee\xe6\xed*\xf1\x1c\xb1v\xb5r\xac"
     # posts
     POST_MAXLENGHT = 280
-    POSTS_PER_PAGE = 8
+    POSTS_PER_PAGE = 10
     # registration
     REGISTRATION_GENDERS = [
         "Male",

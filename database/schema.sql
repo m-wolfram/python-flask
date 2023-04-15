@@ -5,6 +5,7 @@ drop table if exists posts;
 drop table if exists users;
 drop table if exists profiles;
 drop table if exists posts_likes;
+drop table if exists files;
 
 
 CREATE TABLE "posts" (
@@ -43,4 +44,17 @@ CREATE TABLE "posts_likes" (
     FOREIGN KEY("post_id") REFERENCES "posts"("id") ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY("like_author_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY("id" AUTOINCREMENT)
+);
+
+CREATE TABLE "files" (
+    "id" integer,
+    "original_file_name" text NOT NULL,
+    "unique_file_name" text NOT NULL,
+    "owner_id" text NOT NULL,
+    "privacy" text NOT NULL,
+    "upload_date" text NOT NULL,
+    "expires" text NOT NULL,
+    "description" text,
+    FOREIGN KEY("owner_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY("ID" AUTOINCREMENT)
 );

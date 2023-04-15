@@ -1,14 +1,153 @@
 {% extends 'base.html' %}
 
-{% block header %}
-	<p class="text-center fs-5">Upload your file here</p>
-{% endblock %}
+{% if not validations %}
+    {% set file_validation = "" %}
+    {% set accessibility_validation = "" %}
+    {% set expiration_validation = "" %}
+    {% set description_validation = "" %}
+    {# feedbacks #}
+    {% set file_feedback = "" %}
+    {% set accessibility_feedback = "" %}
+    {% set expiration_feedback = "" %}
+    {% set description_feedback = "" %}
+{% else %}
+    {% set file_validation = "is-invalid" if not validations["file"]["check"] else "" %}
+    {% set accessibility_validation = "is-invalid" if not validations["accessibility"]["check"] else "" %}
+    {% set expiration_validation = "is-invalid" if not validations["expiration"]["check"] else "" %}
+    {% set description_validation = "is-invalid" if not validations["description"]["check"] else "" %}
+    {# feedbacks #}
+    {% set file_feedback = validations["file"]["feedback"] %}
+    {% set accessibility_feedback = validations["accessibility"]["feedback"] %}
+    {% set expiration_feedback = validations["expiration"]["feedback"] %}
+    {% set description_feedback = validations["description"]["feedback"] %}
+{% endif %}
 
 {% block content %}
-<div class="text-center justify-content-center col-md-4 offset-md-4 mt-3">
-	<form method="post" enctype="multipart/form-data">
-		<input class="form-control form-control-sm mb-3" type="file" id="formFile" name="outcoming_file">
-		<button type="submit" class="btn btn-sm btn-primary">Upload</button>
-	</form>
-</div>
+	<div class="card col-md-4 offset-md-4 mb-3">
+		<!--Upload form-->
+		<div class="card-header text-center bg-dark fs-6 mb-3">
+			Upload your file here
+		</div>
+		{% if not current_user.is_authenticated %}
+			<div class="card-body ps-3 pe-3 pt-0 pb-0">
+				<div class="card card-body mb-3 bg-body-secondary border border-secondary-subtle text-center"
+					 style="font-size: .875rem;">
+					<p class="mb-0">
+						Uploading a file is <a href="{{ url_for('log_in', next=url_for('upload_file')) }}"
+												class="link-body"
+												style="color: var(--bs-body-color);">log in</a> required.
+					</p>
+				</div>
+			</div>
+		{% else %}
+			<form method="post" enctype="multipart/form-data" id="upload_file_form">
+				<div class="card-body ps-3 pe-3 pt-0 pb-0">
+					<div class="row g-2">
+						<div class="col-md-12">
+							<p class="text-secondary fs-6 mb-0 pb-0">
+								File
+							</p>
+						</div>
+						<!--File-->
+						<div class="col-md-12">
+							<input class="form-control form-control-sm {{ file_validation }}"
+								   type="file" id="formFile" name="outcoming_file" required>
+							<div class="invalid-feedback">
+                            	{{ file_feedback }}
+							</div>
+							<div class="valid-feedback">
+								{{ file_feedback }}
+							</div>
+						</div>
+						<!--Accessibility-->
+						<div class="col-md-6">
+							<select class="form-select form-select-sm {{ accessibility_validation }}"
+                                id="validationPrivacy" name="privacy" required>
+								{% if form is defined %}
+									<option disabled value="">Accessibility</option>
+								{% else %}
+									<option selected disabled value="">Accessibility</option>
+								{% endif %}
+								{% for accessibility_option in config['FILE_UPLOAD_ACCESSIBILITY_OPTIONS'] %}
+									{% if form is defined and form.accessibility == accessibility_option|string %}
+										<option selected="selected">{{ accessibility_option }}</option>
+									{% else %}
+										<option>{{ accessibility_option }}</option>
+									{% endif %}
+								{% endfor %}
+							</select>
+							<div class="invalid-feedback">
+                            	{{ accessibility_feedback }}
+							</div>
+							<div class="valid-feedback">
+								{{ accessibility_feedback }}
+							</div>
+						</div>
+						<!--Expiration-->
+						<div class="col-md-6">
+							<select class="form-select form-select-sm {{ expiration_validation }}"
+                                id="validationExpiration" name="expiration" required>
+								{% if form is defined %}
+									<option disabled value="">Expiration time</option>
+								{% else %}
+									<option selected disabled value="">Expiration time</option>
+								{% endif %}
+								{% for expiration_option in config['FILE_UPLOAD_EXPIRATION_OPTIONS'] %}
+									{% if form is defined and form.expiration == expiration_option|string %}
+										<option selected="selected">{{ expiration_option }}</option>
+									{% else %}
+										<option>{{ expiration_option }}</option>
+									{% endif %}
+								{% endfor %}
+							</select>
+							<div class="invalid-feedback">
+                            	{{ expiration_feedback }}
+							</div>
+							<div class="valid-feedback">
+								{{ expiration_feedback }}
+							</div>
+						</div>
+						<!--Description-->
+						<div class="col-md-12">
+							<p class="text-secondary fs-6 mb-0 pb-0">
+								Description (optional)
+								<i class="bi bi-pencil-fill"></i>
+							</p>
+						</div>
+						<div class="col-md-12">
+							<textarea class="form-control form-control-sm {{ description_validation }}"
+                                placeholder="File description..." id="validationDescription"
+								name="file_description" rows="2"
+								maxlength="{{ config['FILE_DESCRIPTION_LENGTH'] }}">{{ form.description if form is defined }}</textarea>
+							<div class="invalid-feedback">
+                            	{{ description_feedback }}
+							</div>
+							<div class="valid-feedback">
+								{{ description_feedback }}
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="card-footer bg-stripes-body fs-6 mt-3">
+					<div class="row g-0 align-items-center">
+						<div class="col-md-4 text-start">
+							<button type="button" class="btn btn-sm btn-secondary px-1 py-0"
+									data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Erase"
+                                	data-bs-custom-class="tooltip-body"
+									data-bs-trigger="hover"
+									onclick="resetForm('upload_file_form')">
+								<svg class="bi flex-shrink-0" role="img">
+									<use xlink:href="#eraser-fill"/>
+								</svg>
+							</button>
+						</div>
+						<div class="col-md-4 text-center">
+							<button type="submit" class="btn btn-sm btn-primary">Upload</button>
+						</div>
+					</div>
+				</div>
+			</form>
+		{% endif %}
+	</div>
+	<script type="text/javascript" src="{{ url_for('static', filename='reset_form.js') }}"></script>
 {% endblock %}

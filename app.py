@@ -1,3 +1,7 @@
+import os
+import sqlite3
+from pprint import pprint
+from uuid import uuid4
 from datetime import datetime, date
 from flask import Flask, request, current_app, g, \
     url_for, render_template, make_response, redirect, abort, \
@@ -5,12 +9,9 @@ from flask import Flask, request, current_app, g, \
 from flask_paginate import Pagination
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from util.check_password import generate_pwd_hash, check_pwd_hash
-from util.registration_checks import RegistrationForm
-from util.util import is_safe_url
+from util.forms_checks import RegistrationForm, FileUploadForm
+from util.util import is_safe_url, secure_filename_unicode
 from util.users import UserSQLite
-import os
-import sqlite3
-from pprint import pprint
 
 
 app = Flask(__name__)
@@ -62,18 +63,72 @@ def index():
 
 
 @app.route("/upload_file", methods=["GET", "POST"])
-@login_required
 def upload_file():
     if request.method == "GET":
         return render_template("pages/upload_file.html")
     elif request.method == "POST":
-        f = request.files["outcoming_file"]
-        if f.content_type != "application/octet-stream":
-            f.save(os.path.join(current_app.config["UPLOAD_FOLDER"], f.filename))
-            flash("File uploaded successfully!", category="success")
-            app.logger.info("File '{}' saved.".format(f.filename))
+        upload_form = FileUploadForm(request.form, request.files,
+                                     fields_names_mapping={
+                                         "file": "outcoming_file",
+                                         "accessibility": "privacy",
+                                         "expiration": "expiration",
+                                         "description": "file_description"
+                                     },
+                                     accessibility_options=current_app.config["FILE_UPLOAD_ACCESSIBILITY_OPTIONS"],
+                                     expiration_options=current_app.config["FILE_UPLOAD_EXPIRATION_OPTIONS"],
+                                     allowed_extensions=current_app.config["FILE_UPLOAD_ALLOWED_EXTENSIONS"],
+                                     allowed_file_size=current_app.config["FILE_UPLOAD_MAX_SIZE"])
+        validations = upload_form.check_all()
+        is_valid = validations["check"]
+
+        if not is_valid:
+            flash("One or more fields are incorrect.", category="danger")
+            return render_template("pages/upload_file.html", validations=validations["validations"], form=upload_form)
+
+        db = get_db()
+        cur = db.cursor()
+
+        file = request.files["outcoming_file"]
+
+        # "Don't optimize unless you know you need to, and measure rather than guessing."
+        original_file_name_secured = secure_filename_unicode(file.filename)
+
+        if current_app.config["FILE_UPLOAD_VERBOSE_UNIQUE_FILE_NAMES"]:
+            unique_file_name = f"{str(uuid4())}_{original_file_name_secured}"
         else:
-            flash("You have not chosen any file.", category="danger")
+            unique_file_name = f"{str(uuid4())}.{original_file_name_secured.rsplit('.', 1)[1]}"
+
+        upload_date = datetime.now()
+        expiration_date = upload_date + upload_form.expiration_timedelta
+
+        file_upload_query_data = {
+            "original_file_name": original_file_name_secured,
+            "unique_file_name": unique_file_name,
+            "owner_id": current_user.id,
+            "privacy": upload_form.accessibility,
+            "upload_date": upload_date.strftime("%d.%m.%Y %H:%M:%S"),
+            "expiration_date": expiration_date.strftime("%d.%m.%Y %H:%M:%S"),
+            "description": upload_form.description
+        }
+
+        file.save(os.path.join(current_app.config["UPLOAD_FOLDER"], unique_file_name))
+        cur.execute("""
+            INSERT INTO files VALUES(
+                NULL,
+                :original_file_name,
+                :unique_file_name,
+                :owner_id,
+                :privacy,
+                :upload_date,
+                :expiration_date,
+                :description
+            )
+        """, file_upload_query_data)
+        db.commit()
+
+        flash("File uploaded successfully!", category="success")
+        app.logger.info("File '{}' saved.".format(file.filename))
+
         return redirect(url_for("upload_file"))
 
 
@@ -121,12 +176,11 @@ def leave_message_posts_parameters():
         "posts_count": posts_count,
         "posts_per_page": current_app.config["POSTS_PER_PAGE"]
     })
-
     return rsp
 
 
 @app.route("/leave_message/posts/load_posts", methods=["GET"])
-def leave_message_posts():
+def leave_message_load_posts():
     db = get_db()
     cur = db.cursor()
 
@@ -453,19 +507,24 @@ def unslashed():
     return "404 if slash at the end of link"
 
 
+@app.errorhandler(401)
+def unauthorized(error):
+    return render_template("errors/401.html"), 401
+
+
+@app.errorhandler(403)
+def forbidden(error):
+    return render_template("errors/403.html"), 403
+
+
 @app.errorhandler(404)
 def not_found(error):
     return render_template("errors/404.html"), 404
 
 
-@app.errorhandler(403)
-def not_found(error):
-    return render_template("errors/403.html"), 403
-
-
-@app.errorhandler(401)
-def unauthorized(error):
-    return render_template("errors/401.html"), 401
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    return render_template("errors/413.html"), 413
 
 
 @app.teardown_request

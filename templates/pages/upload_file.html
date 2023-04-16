@@ -46,9 +46,9 @@
 					<div class="row g-2">
 						<div class="col-md-12">
 							<div class="bd-callout bd-callout-info mt-0 mb-0" style="font-size: .875rem;">
-								Allowed file size: {{ (config['FILE_UPLOAD_MAX_SIZE'] / (1024 * 1024))|round(2) }} Mb.<br>
-								Extensions: .docx, .xlsx, .pptx,
-										.pdf, .png, .jpg, .gif, .rar, .zip, .txt and others.
+								File must be less than {{ (config['FILE_UPLOAD_MAX_SIZE'] / (1024 * 1024))|int }} Mb.<br>
+								Possible extensions: .txt, .pdf, .png, .jpg, .gif, .docx, .xlsx, .pptx, .rar
+									and others.
 							</div>
 						</div>
 						<div class="col-md-12">
@@ -262,7 +262,7 @@
 																   type="url" id="LinkFile{{ file['id'] }}"
 																   value="{{ url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) }}"
 																   aria-label="readonly input example" readonly>
-															<button class="btn btn-secondary px-1 py-0"
+															<button class="btn btn-secondary px-2 py-0"
 																	style="font-size: .875rem;"
 																	type="button" id="button-copy-addon1"
 																	onclick="copyToClipboard('LinkFile{{ file['id'] }}')">Copy</button>
@@ -391,7 +391,7 @@
 															   type="url" id="LinkPublicFile{{ file['id'] }}"
 															   value="{{ url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) }}"
 															   aria-label="readonly input example" readonly>
-														<button class="btn btn-secondary px-1 py-0"
+														<button class="btn btn-secondary px-2 py-0"
 																style="font-size: .875rem;"
 																type="button" id="button-copy-addon2"
 																onclick="copyToClipboard('LinkPublicFile{{ file['id'] }}')">Copy</button>

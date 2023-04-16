@@ -70,7 +70,7 @@ class ConfigDefault:
         "webm", "zip", "rar",
         "txt", "mp3", "mp4"
     ]
-    FILES_PER_USER = 10
+    FILES_PER_USER = 16
     FILE_DESCRIPTION_LENGTH = 72
 
 

@@ -50,6 +50,7 @@ CREATE TABLE "files" (
     "id" integer,
     "original_file_name" text NOT NULL,
     "unique_file_name" text NOT NULL,
+    "size_in_bytes" integer NOT NULL,
     "owner_id" text NOT NULL,
     "privacy" text NOT NULL,
     "upload_date" text NOT NULL,

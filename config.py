@@ -5,7 +5,7 @@ import datetime
 class ConfigDefault:
     DEBUG = False
     SECRET_KEY = b"\xd2l\x1c\xa3\x0c\xc4\x91\x19\xbb\xf3\x15\xfe\xfc\xee\xe6\xed*\xf1\x1c\xb1v\xb5r\xac"
-    MAX_CONTENT_LENGTH = 16 * 1000 * 1000
+    MAX_CONTENT_LENGTH = 32 * 1024 * 1024
 
     # posts
     POST_MAXLENGHT = 280
@@ -48,7 +48,7 @@ class ConfigDefault:
 
     # file upload
     FILE_UPLOAD_VERBOSE_UNIQUE_FILE_NAMES = True
-    FILE_UPLOAD_MAX_SIZE = 8 * 1000 * 1000
+    FILE_UPLOAD_MAX_SIZE = 32 * 1024 * 1024
     FILE_UPLOAD_ACCESSIBILITY_OPTIONS = [
         "Public",
         "Private",
@@ -71,7 +71,7 @@ class ConfigDefault:
         "txt", "mp3", "mp4"
     ]
     FILES_PER_USER = 10
-    FILE_DESCRIPTION_LENGTH = 140
+    FILE_DESCRIPTION_LENGTH = 72
 
 
 if __name__ == "__main__":

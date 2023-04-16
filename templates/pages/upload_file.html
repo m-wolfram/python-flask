@@ -40,9 +40,17 @@
 				</div>
 			</div>
 		{% else %}
+			<!--Upload form-->
 			<form method="post" enctype="multipart/form-data" id="upload_file_form">
 				<div class="card-body ps-3 pe-3 pt-0 pb-0">
 					<div class="row g-2">
+						<div class="col-md-12">
+							<div class="bd-callout bd-callout-body mt-0 mb-0" style="font-size: .875rem;">
+								Allowed file size: {{ (config['FILE_UPLOAD_MAX_SIZE'] / (1024 * 1024))|round(2) }} Mb.<br>
+								Extensions: .docx, .xlsx, .pptx,
+										.pdf, .png, .jpg, .gif, .rar, .zip, .txt and others.
+							</div>
+						</div>
 						<div class="col-md-12">
 							<p class="text-secondary fs-6 mb-0 pb-0">
 								File
@@ -149,5 +157,287 @@
 			</form>
 		{% endif %}
 	</div>
+	<!--Private files-->
+	{% if current_user.is_authenticated %}
+		<div class="card col-md-4 offset-md-4 mb-3">
+			<div class="card-header text-start bg-dark fs-6 mb-3">
+				Your files
+			</div>
+			<div id="private-files-container" class="card-body py-0">
+				<!--files-->
+				{% if user_files %}
+					{% for file in user_files %}
+						{% set privacy_text_color =
+							"text-primary" if file['privacy'] == 'Public'
+							else "text-warning" if file['privacy'] == 'By link'
+							else "text-success" %}
+						{% set privacy_border_color =
+							"border-primary-subtle" if file['privacy'] == 'Public'
+							else "border-warning-subtle" if file['privacy'] == 'By link'
+							else "border-success-subtle" %}
+						<div class="accordion accordion-dark-small">
+							<div class="accordion-item mb-2">
+								<h2 class="accordion-header">
+									<button class="accordion-button collapsed shadow-none d-flex justify-content-between
+											border-start border-4 {{ privacy_border_color }}"
+											style="font-size: .875rem;"
+											type="button" data-bs-toggle="collapse"
+											data-bs-target="#collapseFile{{ file['id'] }}" aria-expanded="true"
+											aria-controls="collapseFile{{ file['id'] }}">
+										<span class="d-inline-block text-truncate" style="max-width: 180px;">
+											{{ file['original_file_name'] }}
+										</span>
+									</button>
+								</h2>
+								<div id="collapseFile{{ file['id'] }}" class="accordion-collapse collapse">
+									<div class="accordion-body px-0 py-0" style="font-size: .875rem;">
+										<ul class="list-group list-group-flush"
+											style="--bs-list-group-bg: none;">
+											<li class="list-group-item py-2">
+												<div class="row align-items-center">
+													<div class="col-md-3">
+														Privacy:
+													</div>
+													<div class="col-md-9 text-end {{ privacy_text_color }}">
+														{{ file['privacy'] }}
+													</div>
+												</div>
+											</li>
+											<li class="list-group-item py-2">
+												<div class="row align-items-center">
+													<div class="col-md-3">
+														Size:
+													</div>
+													<div class="col-md-9 text-end text-secondary">
+														{{ (file['size_in_bytes'] / (1024 * 1024))|round(2) }} Mb.
+													</div>
+												</div>
+											</li>
+											<li class="list-group-item bg-transparent py-2">
+												<div class="row align-items-center">
+													<div class="col-md-3">
+														Description:
+													</div>
+													<div class="col-md-9 text-end {{ 'text-secondary' if file['description'] else 'text-body' }} text-truncate">
+														{{ file['description'] if file['description'] else 'No description' }}
+													</div>
+												</div>
+											</li>
+											<li class="list-group-item bg-transparent py-2">
+												<div class="row align-items-center">
+													<div class="col-md-3">
+														Upload date:
+													</div>
+													<div class="col-md-9 text-end text-secondary">
+														{{ file['upload_date'][:-3] }}
+													</div>
+												</div>
+											</li>
+											<li class="list-group-item bg-transparent py-2">
+												<div class="row align-items-center">
+													<div class="col-md-3">
+														Expiration date:
+													</div>
+													<div class="col-md-9 text-end text-secondary">
+														{{ file['expires'][:-3] }}
+													</div>
+												</div>
+											</li>
+											<li class="list-group-item bg-transparent py-2">
+												<div class="row align-items-center">
+													<div class="col-md-3">
+														Owner:
+													</div>
+													<div class="col-md-9 text-end text-secondary">
+														{{ file['username'] }}
+													</div>
+												</div>
+											</li>
+											<li class="list-group-item bg-transparent py-2">
+												<div class="row align-items-center">
+													<div class="col-md-2">
+														Link:
+													</div>
+													<div class="col-md-10 text-end">
+														<div class="input-group">
+															<input class="form-control form-control-sm border-1 shadow-none
+																   focus-primary-subtle text-secondary"
+																   type="url" id="LinkFile{{ file['id'] }}"
+																   value="{{ url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) }}"
+																   aria-label="readonly input example" readonly>
+															<button class="btn btn-outline-secondary px-1 py-0"
+																	style="font-size: .875rem;"
+																	type="button" id="button-copy-addon1"
+																	onclick="copyToClipboard('LinkFile{{ file['id'] }}')">Copy</button>
+														</div>
+													</div>
+												</div>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+					{% endfor %}
+				{% else %}
+					<div class="card card-body text-center py-1 mb-2" style="font-size: .875rem;">
+						You have not uploaded any file.
+					</div>
+				{% endif %}
+			</div>
+			<div class="card-footer bg-stripes-body mt-2">
+				<div class="row g-0 align-items-center">
+					<div class="col-md-12 text-end text-body-secondary">
+						<span>
+							<span id="private-files-count">{% if user_files %} {{ user_files|length }} {% else %} 0 {% endif %}</span> /
+							<span id="private-files-allowed">{{ config["FILES_PER_USER"] }}</span> private files uploaded
+						</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+	<!--Public files-->
+	<div class="card col-md-4 offset-md-4 mb-3">
+		<div class="card-header text-start bg-dark fs-6">
+			Public files
+		</div>
+		<div id="public-files-container" class="card-body pb-0">
+			{% if public_files %}
+				{% for file in public_files %}
+					{% set privacy_text_color = 'text-primary' %}
+					{% set privacy_border_color = 'border-primary-subtle' %}
+					<div class="accordion accordion-dark-small">
+						<div class="accordion-item mb-2">
+							<h2 class="accordion-header">
+								<button class="accordion-button collapsed shadow-none d-flex justify-content-between
+										border-start border-4 {{ privacy_border_color }}"
+										style="font-size: .875rem;"
+										type="button" data-bs-toggle="collapse"
+										data-bs-target="#collapsePublicFile{{ file['id'] }}" aria-expanded="true"
+										aria-controls="collapsePublicFile{{ file['id'] }}">
+									<span class="d-inline-block text-truncate" style="max-width: 180px;">
+										{{ file['original_file_name'] }}
+									</span>
+								</button>
+							</h2>
+							<div id="collapsePublicFile{{ file['id'] }}" class="accordion-collapse collapse">
+								<div class="accordion-body px-0 py-0" style="font-size: .875rem;">
+									<ul class="list-group list-group-flush"
+										style="--bs-list-group-bg: none;">
+										<li class="list-group-item py-2">
+											<div class="row align-items-center">
+												<div class="col-md-3">
+													Privacy:
+												</div>
+												<div class="col-md-9 text-end {{ privacy_text_color }}">
+													{{ file['privacy'] }}
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item py-2">
+											<div class="row align-items-center">
+												<div class="col-md-3">
+													Size:
+												</div>
+												<div class="col-md-9 text-end text-secondary">
+													{{ (file['size_in_bytes'] / (1024 * 1024))|round(2) }} Mb.
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item bg-transparent py-2">
+											<div class="row align-items-center">
+												<div class="col-md-3">
+													Description:
+												</div>
+												<div class="col-md-9 text-end {{ 'text-secondary' if file['description'] else 'text-body' }} text-truncate">
+													{{ file['description'] if file['description'] else 'No description' }}
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item bg-transparent py-2">
+											<div class="row align-items-center">
+												<div class="col-md-3">
+													Upload date:
+												</div>
+												<div class="col-md-9 text-end text-secondary">
+													{{ file['upload_date'][:-3] }}
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item bg-transparent py-2">
+											<div class="row align-items-center">
+												<div class="col-md-3">
+													Expiration date:
+												</div>
+												<div class="col-md-9 text-end text-secondary">
+													{{ file['expires'][:-3] }}
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item bg-transparent py-2">
+											<div class="row align-items-center">
+												<div class="col-md-3">
+													Owner:
+												</div>
+												<div class="col-md-9 text-end text-secondary">
+													{{ file['username'] }}
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item bg-transparent py-2">
+											<div class="row align-items-center">
+												<div class="col-md-2">
+													Link:
+												</div>
+												<div class="col-md-10 text-end">
+													<div class="input-group">
+														<input class="form-control form-control-sm border-1 shadow-none
+															   focus-primary-subtle text-secondary"
+															   type="url" id="LinkPublicFile{{ file['id'] }}"
+															   value="{{ url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) }}"
+															   aria-label="readonly input example" readonly>
+														<button class="btn btn-outline-secondary px-1 py-0"
+																style="font-size: .875rem;"
+																type="button" id="button-copy-addon2"
+																onclick="copyToClipboard('LinkPublicFile{{ file['id'] }}')">Copy</button>
+													</div>
+												</div>
+											</div>
+										</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+				{% endfor %}
+			{% else %}
+				<div>
+					<div class="card card-body text-center py-1 mb-2" style="font-size: .875rem;">
+						Nothing yet here.
+					</div>
+				</div>
+			{% endif %}
+		</div>
+		<div class="card-footer bg-stripes-body mt-2">
+			<div class="row g-0 align-items-center">
+				<div class="col-md-12 text-end text-body-secondary">
+					<span>
+						<span id="public-files-total">{{ public_files|length }}</span> files
+					</span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		function copyToClipboard(TextElementID) {
+		  	var copyText = document.getElementById(TextElementID);
+
+		  	copyText.select();
+		  	copyText.setSelectionRange(0, 99999); // For mobile devices
+
+		  	navigator.clipboard.writeText(copyText.value);
+		}
+	</script>
 	<script type="text/javascript" src="{{ url_for('static', filename='reset_form.js') }}"></script>
 {% endblock %}

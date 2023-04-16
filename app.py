@@ -5,7 +5,7 @@ from uuid import uuid4
 from datetime import datetime, date
 from flask import Flask, request, current_app, g, \
     url_for, render_template, make_response, redirect, abort, \
-    flash, session, jsonify
+    flash, session, jsonify, send_from_directory
 from flask_paginate import Pagination
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from util.check_password import generate_pwd_hash, check_pwd_hash
@@ -65,71 +65,134 @@ def index():
 @app.route("/upload_file", methods=["GET", "POST"])
 def upload_file():
     if request.method == "GET":
-        return render_template("pages/upload_file.html")
-    elif request.method == "POST":
-        upload_form = FileUploadForm(request.form, request.files,
-                                     fields_names_mapping={
-                                         "file": "outcoming_file",
-                                         "accessibility": "privacy",
-                                         "expiration": "expiration",
-                                         "description": "file_description"
-                                     },
-                                     accessibility_options=current_app.config["FILE_UPLOAD_ACCESSIBILITY_OPTIONS"],
-                                     expiration_options=current_app.config["FILE_UPLOAD_EXPIRATION_OPTIONS"],
-                                     allowed_extensions=current_app.config["FILE_UPLOAD_ALLOWED_EXTENSIONS"],
-                                     allowed_file_size=current_app.config["FILE_UPLOAD_MAX_SIZE"])
-        validations = upload_form.check_all()
-        is_valid = validations["check"]
-
-        if not is_valid:
-            flash("One or more fields are incorrect.", category="danger")
-            return render_template("pages/upload_file.html", validations=validations["validations"], form=upload_form)
-
         db = get_db()
         cur = db.cursor()
 
-        file = request.files["outcoming_file"]
+        public_files = cur.execute("""
+            SELECT * FROM files f
+            LEFT JOIN users u ON f.owner_id = u.id
+            WHERE privacy = 'Public'
+            ORDER BY upload_date DESC
+        """).fetchall()
+        user_files = None
 
-        # "Don't optimize unless you know you need to, and measure rather than guessing."
-        original_file_name_secured = secure_filename_unicode(file.filename)
+        if current_user.is_authenticated:
+            user_files = cur.execute("""
+                SELECT * FROM files f
+                LEFT JOIN users u ON f.owner_id = u.id
+                WHERE owner_id = ?
+                ORDER BY upload_date DESC
+            """, [current_user.id]).fetchall()
 
-        if current_app.config["FILE_UPLOAD_VERBOSE_UNIQUE_FILE_NAMES"]:
-            unique_file_name = f"{str(uuid4())}_{original_file_name_secured}"
+        return render_template("pages/upload_file.html", user_files=user_files, public_files=public_files)
+    elif request.method == "POST":
+        if current_user.is_authenticated:
+            upload_form = FileUploadForm(request.form, request.files,
+                                         fields_names_mapping={
+                                             "file": "outcoming_file",
+                                             "accessibility": "privacy",
+                                             "expiration": "expiration",
+                                             "description": "file_description"
+                                         },
+                                         accessibility_options=current_app.config["FILE_UPLOAD_ACCESSIBILITY_OPTIONS"],
+                                         expiration_options=current_app.config["FILE_UPLOAD_EXPIRATION_OPTIONS"],
+                                         allowed_extensions=current_app.config["FILE_UPLOAD_ALLOWED_EXTENSIONS"],
+                                         allowed_file_size=current_app.config["FILE_UPLOAD_MAX_SIZE"])
+            validations = upload_form.check_all()
+            is_valid = validations["check"]
+
+            if not is_valid:
+                flash("One or more fields are incorrect.", category="danger")
+                return render_template("pages/upload_file.html", validations=validations["validations"],
+                                       form=upload_form)
+
+            db = get_db()
+            cur = db.cursor()
+
+            users_files_count = cur.execute("""
+                SELECT COUNT(*) count FROM files
+                WHERE owner_id = ?
+            """, [current_user.id]).fetchone()['count']
+
+            if int(users_files_count) >= current_app.config['FILES_PER_USER']:
+                flash("You have reached files limit!", category="danger")
+                return redirect(request.url)
+
+            file = request.files["outcoming_file"]
+
+            # "Don't optimize unless you know you need to, and measure rather than guessing."
+            original_file_name_secured = secure_filename_unicode(file.filename)
+            if current_app.config["FILE_UPLOAD_VERBOSE_UNIQUE_FILE_NAMES"]:
+                unique_file_name = f"{str(uuid4())}_{original_file_name_secured}"
+            else:
+                unique_file_name = f"{str(uuid4())}.{original_file_name_secured.rsplit('.', 1)[1]}"
+            upload_date = datetime.now()
+            expiration_date = upload_date + upload_form.expiration_timedelta
+
+            file_save_path = os.path.join(current_app.config["UPLOAD_FOLDER"], unique_file_name)
+            file.save(file_save_path)
+            file_size = os.stat(file_save_path).st_size
+
+            file_upload_query_data = {
+                "original_file_name": original_file_name_secured,
+                "unique_file_name": unique_file_name,
+                "size_in_bytes": file_size,
+                "owner_id": current_user.id,
+                "privacy": upload_form.accessibility,
+                "upload_date": upload_date.strftime("%d.%m.%Y %H:%M:%S"),
+                "expiration_date": expiration_date.strftime("%d.%m.%Y %H:%M:%S"),
+                "description": upload_form.description
+            }
+            cur.execute("""
+                INSERT INTO files VALUES(
+                    NULL,
+                    :original_file_name,
+                    :unique_file_name,
+                    :size_in_bytes,
+                    :owner_id,
+                    :privacy,
+                    :upload_date,
+                    :expiration_date,
+                    :description
+                )
+            """, file_upload_query_data)
+            db.commit()
+
+            flash("File uploaded successfully!", category="success")
+            app.logger.info("File '{}' saved.".format(original_file_name_secured))
+
+            return redirect(request.url)
         else:
-            unique_file_name = f"{str(uuid4())}.{original_file_name_secured.rsplit('.', 1)[1]}"
+            abort(401)
 
-        upload_date = datetime.now()
-        expiration_date = upload_date + upload_form.expiration_timedelta
 
-        file_upload_query_data = {
-            "original_file_name": original_file_name_secured,
-            "unique_file_name": unique_file_name,
-            "owner_id": current_user.id,
-            "privacy": upload_form.accessibility,
-            "upload_date": upload_date.strftime("%d.%m.%Y %H:%M:%S"),
-            "expiration_date": expiration_date.strftime("%d.%m.%Y %H:%M:%S"),
-            "description": upload_form.description
-        }
+@app.route("/file/<path:unique_file_name>", methods=["GET"])
+def download_file(unique_file_name):
+    db = get_db()
+    cur = db.cursor()
 
-        file.save(os.path.join(current_app.config["UPLOAD_FOLDER"], unique_file_name))
-        cur.execute("""
-            INSERT INTO files VALUES(
-                NULL,
-                :original_file_name,
-                :unique_file_name,
-                :owner_id,
-                :privacy,
-                :upload_date,
-                :expiration_date,
-                :description
-            )
-        """, file_upload_query_data)
-        db.commit()
+    file_record = cur.execute("""
+        SELECT * FROM files
+        WHERE unique_file_name = ?
+    """, [unique_file_name]).fetchone()
 
-        flash("File uploaded successfully!", category="success")
-        app.logger.info("File '{}' saved.".format(file.filename))
+    if file_record is None:
+        abort(404)
 
-        return redirect(url_for("upload_file"))
+    file_privacy = file_record["privacy"]
+
+    if file_privacy == "Public" or file_privacy == "By link":
+        return send_from_directory(current_app.config["UPLOAD_FOLDER"], file_record["unique_file_name"],
+                                   download_name=file_record["original_file_name"])
+    elif file_privacy == "Private":
+        if current_user.is_authenticated:
+            if int(file_record["owner_id"]) == current_user.id:
+                return send_from_directory(current_app.config["UPLOAD_FOLDER"], file_record["unique_file_name"],
+                                           download_name=file_record["original_file_name"])
+            else:
+                abort(403)
+        else:
+            abort(403)
 
 
 @app.route("/leave_message", methods=["GET", "POST"])
@@ -141,28 +204,31 @@ def leave_message():
         prev_text = request.args.get("msg", None)
         return render_template("pages/leave_message.html", msg_text=prev_text)
     elif request.method == "POST":
-        msg_text = request.form["msg_text"]
+        if current_user.is_authenticated:
+            msg_text = request.form["msg_text"]
 
-        if len(msg_text) > 0:
-            data = {
-                "author": getattr(current_user, "username", ""),
-                "text": msg_text,
-                "date": datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-            }
-            cur.execute("""
-                INSERT INTO Posts (author_id, text, date)
-                VALUES(
-                    (SELECT id FROM users WHERE username = :author), :text, :date
-                )
-            """, data)
-            db.commit()
+            if len(msg_text) > 0:
+                data = {
+                    "author": getattr(current_user, "username", ""),
+                    "text": msg_text,
+                    "date": datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+                }
+                cur.execute("""
+                    INSERT INTO Posts (author_id, text, date)
+                    VALUES(
+                        (SELECT id FROM users WHERE username = :author), :text, :date
+                    )
+                """, data)
+                db.commit()
 
-            app.logger.info("MSG FROM '{}': {}".format(getattr(current_user, "username", ""), msg_text))
-            flash("Successfully sent!", category="success")
-            return redirect(url_for("leave_message"))
-        if len(msg_text) == 0:
-            flash("You did not enter message text.", category="danger")
-        return redirect(url_for("leave_message"))
+                app.logger.info("MSG FROM '{}': {}".format(getattr(current_user, "username", ""), msg_text))
+                flash("Successfully sent!", category="success")
+                return redirect(url_for("leave_message"))
+            if len(msg_text) == 0:
+                flash("You did not enter message text.", category="danger")
+            return redirect(request.url)
+        else:
+            abort(401)
 
 
 @app.route("/leave_message/posts/parameters", methods=["GET"])
@@ -228,6 +294,7 @@ def leave_message_load_posts():
 
 
 @app.route("/leave_message/posts/delete/<int:post_id>", methods=["DELETE"])
+@login_required
 def leave_message_delete_post(post_id):
     db = get_db()
     cur = db.cursor()
@@ -236,11 +303,12 @@ def leave_message_delete_post(post_id):
         SELECT author_id FROM posts WHERE id=?
     """, [post_id]).fetchone()
 
-    if post_author_id is not None and current_user.is_authenticated and current_user.id == post_author_id["author_id"]:
+    if post_author_id is not None and current_user.id == post_author_id["author_id"]:
         cur.execute("""
             DELETE FROM posts WHERE id=?
         """, [post_id])
         db.commit()
+
         return jsonify({
             "deleted_post_id": post_id
         })
@@ -250,12 +318,21 @@ def leave_message_delete_post(post_id):
 
 @app.route("/leave_message/posts/like", methods=["GET"])
 def leave_message_like():
+    """
+    TODO:
+    split into 3 requests:
+        insert like (PUT),
+        delete like (DELETE),
+        get likes (GET).
+    """
+
     db = get_db()
     cur = db.cursor()
 
     post_id = request.args.get("post_id", None)
 
     # NOT FOR LOGIN_REQUIRED!
+    # because if user are not authenticated likes are loaded anyway
     if not current_user.is_authenticated:
         abort(401)
 
@@ -323,10 +400,10 @@ def log_in():
 
         if len(username) == 0 or len(password) == 0:
             flash("Incorrect data.", category="danger")
-            return redirect(url_for("log_in"))
+            return redirect(request.url)
         elif user is None:
             flash("User not found.", category="danger")
-            return redirect(url_for("log_in"))
+            return redirect(request.url)
 
         if check_pwd_hash(user["password_hash"], password):
             if remember:
@@ -340,7 +417,7 @@ def log_in():
             return redirect(next_ or url_for("index"))
         else:
             flash("Incorrect password.", category="danger")
-            return redirect(url_for("log_in"))
+            return redirect(request.url)
 
 
 @app.route("/register", methods=["GET", "POST"])

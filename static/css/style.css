@@ -37,7 +37,7 @@
     --bs-accordion-btn-bg: var(--bs-body-bg);
     --bs-accordion-btn-icon-width: 0.875rem;
     --bs-accordion-btn-padding-x: 0.5rem;
-    --bs-accordion-btn-padding-y: 0.375rem;
+    --bs-accordion-btn-padding-y: 0rem;
 }
 
 .accordion-button.collapsed::after {

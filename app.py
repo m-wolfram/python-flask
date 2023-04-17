@@ -295,7 +295,7 @@ def leave_message_load_posts():
         ON p.id = ul.post_id
         GROUP BY p.id
         ORDER BY date DESC LIMIT :offset, :limit
-    """, page_posts_query_data).fetchall()
+    """, page_posts_query_data).fetchall() # TODO: split
     return render_template("elements/leave_message_posts.html", posts=page_posts)
 
 

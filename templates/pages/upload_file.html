@@ -45,7 +45,7 @@
 				<div class="card-body ps-3 pe-3 pt-0 pb-0">
 					<div class="row g-2">
 						<div class="col-md-12">
-							<div class="bd-callout bd-callout-info mt-0 mb-0" style="font-size: .875rem;">
+							<div class="bd-callout bd-callout-info mt-0 mb-0 py-3" style="font-size: .875rem;">
 								File must be less than {{ (config['FILE_UPLOAD_MAX_SIZE'] / (1024 * 1024))|int }} Mb.<br>
 								Possible extensions: .txt, .pdf, .png, .jpg, .gif, .docx, .xlsx, .pptx, .rar
 									and others.
@@ -235,7 +235,7 @@
 													</div>
 												</div>
 											</li>
-											<li class="list-group-item py-1" style="background-color: var(--bs-card-cap-bg);">
+											<li class="list-group-item py-1">
 												<div class="d-flex flex-row align-items-center">
 													{% if not file['privacy'] == 'Private' %}
 														<div class="flex-grow-1">
@@ -300,6 +300,12 @@
 			Public files
 		</div>
 		<div id="public-files-container" class="card-body pb-0">
+			{% if current_user.is_authenticated %}
+				<div class="bd-callout bd-callout-info mt-0 mb-3 py-3" style="font-size: .875rem;">
+					Your public files are stored but not shown for you here. Others can see it.
+					You can edit them in your files section and they will be updated for others here immediately.
+				</div>
+			{% endif %}
 			{% if public_files %}
 				{% for file in public_files %}
 					{% set privacy_text_color = 'text-primary text-opacity-75' %}
@@ -354,7 +360,7 @@
 												</div>
 											</div>
 										</li>
-										<li class="list-group-item py-1" style="background-color: var(--bs-card-cap-bg);">
+										<li class="list-group-item py-1">
 											<div class="d-flex flex-row align-items-center">
 												<div class="flex-grow-1">
 													<div class="input-group">

@@ -14,7 +14,7 @@
             <div class="me-auto">
                 <p class="card-text text-body-tertiary fs-6">
                     {{ post["username"] if post["username"] is not none else "DELETED" }},
-                    <i>at</i> {{ post["date"][:-3] }}
+                    <i>at</i> {{ post["date"] }}
                 </p>
             </div>
             <div id="like_{{ post['id'] }}">

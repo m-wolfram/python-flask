@@ -69,7 +69,10 @@ def upload_file():
         cur = db.cursor()
 
         public_files = cur.execute("""
-            SELECT * FROM files f
+            SELECT f.id, original_file_name, unique_file_name, size_in_bytes,
+                   owner_id, privacy, strftime("%d.%m.%Y %H:%M", upload_date) upload_date,
+                   strftime("%d.%m.%Y %H:%M", expires) expires, description, username
+            FROM files f
             LEFT JOIN users u ON f.owner_id = u.id
             WHERE privacy = 'Public'
             ORDER BY upload_date DESC
@@ -78,7 +81,10 @@ def upload_file():
 
         if current_user.is_authenticated:
             user_files = cur.execute("""
-                SELECT * FROM files f
+                SELECT f.id, original_file_name, unique_file_name, size_in_bytes,
+                   owner_id, privacy, strftime("%d.%m.%Y %H:%M", upload_date) upload_date,
+                   strftime("%d.%m.%Y %H:%M", expires) expires, description, username
+                FROM files f
                 LEFT JOIN users u ON f.owner_id = u.id
                 WHERE owner_id = ?
                 ORDER BY upload_date DESC
@@ -139,8 +145,8 @@ def upload_file():
                 "size_in_bytes": file_size,
                 "owner_id": current_user.id,
                 "privacy": upload_form.accessibility,
-                "upload_date": upload_date.strftime("%d.%m.%Y %H:%M:%S"),
-                "expiration_date": expiration_date.strftime("%d.%m.%Y %H:%M:%S"),
+                "upload_date": upload_date.isoformat(),
+                "expiration_date": expiration_date.isoformat(),
                 "description": upload_form.description
             }
             cur.execute("""
@@ -211,7 +217,7 @@ def leave_message():
                 data = {
                     "author": getattr(current_user, "username", ""),
                     "text": msg_text,
-                    "date": datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+                    "date": datetime.now().isoformat()
                 }
                 cur.execute("""
                     INSERT INTO Posts (author_id, text, date)
@@ -275,7 +281,7 @@ def leave_message_load_posts():
         "user_id": getattr(current_user, "id", "")
     }
     page_posts = cur.execute("""
-        SELECT p.id id, username, text, date, COUNT(pl.id) likes,
+        SELECT p.id id, username, text, strftime("%d.%m.%Y %H:%M", date) date, COUNT(pl.id) likes,
         CASE
             WHEN ul.like_author_id=:user_id THEN 1
             ELSE 0
@@ -463,9 +469,9 @@ def register():
                 "gender": reg_form.gender,
                 "birthdate": date(int(reg_form.birthdate_year),
                                   int(reg_form.birthdate_month_num),
-                                  int(reg_form.birthdate_day)).strftime("%d.%m.%Y"),
+                                  int(reg_form.birthdate_day)).isoformat(),
                 "bio": reg_form.bio,
-                "registration_date": datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+                "registration_date": datetime.now().isoformat()
             }
             cur.execute("""
                 INSERT INTO users VALUES(NULL, ?, ?)

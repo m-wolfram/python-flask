@@ -253,20 +253,32 @@
 													</div>
 												</div>
 											</li>
-											<li class="list-group-item bg-transparent py-1">
-												<div class="row align-items-center">
-													<div class="col-md-12 text-end">
+											<li class="list-group-item py-1" style="background-color: var(--bs-card-cap-bg);">
+												<div class="d-flex flex-row align-items-center">
+													<div class="pe-3 flex-grow-1">
 														<div class="input-group">
 															<input class="form-control form-control-sm border-1 shadow-none
 																   focus-primary-subtle text-body-secondary"
 																   type="url" id="LinkFile{{ file['id'] }}"
 																   value="{{ url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) }}"
 																   aria-label="readonly input example" readonly>
-															<button class="btn btn-secondary px-2 py-0"
+															<button class="btn btn-sm btn-outline-secondary px-2 py-0"
 																	style="font-size: .875rem;"
 																	type="button" id="button-copy-addon1"
 																	onclick="copyToClipboard('LinkFile{{ file['id'] }}')">Copy</button>
 														</div>
+													</div>
+													<div class="text-center">
+														<form action="{{ url_for('remove_file', unique_file_name=file['unique_file_name']) }}" method="POST">
+															<button class="btn btn-sm btn-outline-danger"
+																	style="font-size: .875rem;"
+																	type="submit">
+																<svg class="bi flex-shrink-0" role="img">
+																	<use xlink:href="#trash-fill"/>
+																</svg>
+																Delete
+															</button>
+														</form>
 													</div>
 												</div>
 											</li>
@@ -381,20 +393,32 @@
 												</div>
 											</div>
 										</li>
-										<li class="list-group-item bg-transparent py-1">
-											<div class="row align-items-center">
-												<div class="col-md-12 text-end">
+										<li class="list-group-item py-1" style="background-color: var(--bs-card-cap-bg);">
+											<div class="d-flex flex-row align-items-center">
+												<div class="pe-3 flex-grow-1">
 													<div class="input-group">
 														<input class="form-control form-control-sm border-1 shadow-none
 															   focus-primary-subtle text-body-secondary"
 															   type="url" id="LinkPublicFile{{ file['id'] }}"
 															   value="{{ url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) }}"
 															   aria-label="readonly input example" readonly>
-														<button class="btn btn-secondary px-1 py-0"
+														<button class="btn btn-outline-secondary px-1 py-0"
 																style="font-size: .875rem;"
 																type="button" id="button-copy-addon2"
 																onclick="copyToClipboard('LinkPublicFile{{ file['id'] }}')">Copy</button>
 													</div>
+												</div>
+												<div>
+													<form action="{{ url_for('remove_file', unique_file_name=file['unique_file_name']) }}" method="POST">
+														<button class="btn btn-sm btn-outline-danger"
+																style="font-size: .875rem;"
+																type="submit">
+															<svg class="bi flex-shrink-0" role="img">
+																<use xlink:href="#trash-fill"/>
+															</svg>
+															Delete
+														</button>
+													</form>
 												</div>
 											</div>
 										</li>

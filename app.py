@@ -180,7 +180,39 @@ def upload_file():
             abort(401)
 
 
-@app.route("/file/<path:unique_file_name>", methods=["GET"])
+@app.route("/files/remove/<path:unique_file_name>", methods=["POST"])
+@login_required
+def remove_file(unique_file_name):
+    db = get_db()
+    cur = db.cursor()
+
+    file_path = os.path.join(current_app.config["UPLOAD_FOLDER"], unique_file_name)
+    file_record = cur.execute("""
+        SELECT * FROM files
+        WHERE unique_file_name = ?
+    """, [unique_file_name]).fetchone()
+
+    if file_record is None:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        abort(404)
+
+    if int(file_record["owner_id"]) == current_user.id:
+        cur.execute("""
+            DELETE FROM files
+            WHERE unique_file_name = ?
+        """, [unique_file_name])
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        db.commit()
+
+        flash("File deleted successfully!", category="success")
+        return redirect(url_for("upload_file"))
+    else:
+        abort(403)
+
+
+@app.route("/files/<path:unique_file_name>", methods=["GET"])
 def download_file(unique_file_name):
     db = get_db()
     cur = db.cursor()

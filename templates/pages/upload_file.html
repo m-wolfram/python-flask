@@ -161,7 +161,7 @@
 	{% if current_user.is_authenticated %}
 		<div class="card col-md-4 offset-md-4 mb-3">
 			<div class="card-header text-start bg-dark fs-6 mb-3">
-				Your files
+				My files
 			</div>
 			<div id="private-files-container" class="card-body py-0">
 				<!--files-->
@@ -261,7 +261,7 @@
 													{% endif %}
 													<div class="text-center ms-auto">
 														<form action="{{ url_for('remove_file', unique_file_name=file['unique_file_name']) }}" method="POST">
-															<button class="btn btn-sm btn-outline-danger ms-2"
+															<button class="btn btn-sm btn-danger ms-2"
 																	style="font-size: .875rem;"
 																	type="submit">
 																Delete file

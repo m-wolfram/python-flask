@@ -191,8 +191,7 @@
 								</h2>
 								<div id="collapseFile{{ file['id'] }}" class="accordion-collapse collapse">
 									<div class="accordion-body px-0 py-0" style="font-size: .875rem;">
-										<ul class="list-group list-group-flush py-0"
-											style="--bs-list-group-bg: none;">
+										<ul class="list-group list-group-flush py-0" style="--bs-list-group-bg: none;">
 											<li class="list-group-item py-1">
 												<div class="row align-items-center">
 													<div class="col-md-3">
@@ -255,22 +254,30 @@
 											</li>
 											<li class="list-group-item py-1" style="background-color: var(--bs-card-cap-bg);">
 												<div class="d-flex flex-row align-items-center">
-													<div class="pe-3 flex-grow-1">
-														<div class="input-group">
-															<input class="form-control form-control-sm border-1 shadow-none
-																   focus-primary-subtle text-body-secondary"
-																   type="url" id="LinkFile{{ file['id'] }}"
-																   value="{{ url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) }}"
-																   aria-label="readonly input example" readonly>
-															<button class="btn btn-sm btn-outline-secondary px-2 py-0"
-																	style="font-size: .875rem;"
-																	type="button" id="button-copy-addon1"
-																	onclick="copyToClipboard('LinkFile{{ file['id'] }}')">Copy</button>
+													{% if not file['privacy'] == 'Private' %}
+														<div class="flex-grow-1">
+															<div class="input-group">
+																{% set file_link = url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) %}
+																<input class="form-control form-control-sm border-1 shadow-none
+																	   focus-primary-subtle text-body-secondary"
+																	   type="url" id="LinkFile{{ file['id'] }}"
+																	   value="{{ file_link }}"
+																	   aria-label="readonly input example" readonly>
+																<button class="btn btn-sm btn-outline-secondary px-2 py-0"
+																		style="font-size: .875rem;"
+																		type="button" id="button-copy-addon1"
+																		onclick="copyToClipboard('LinkFile{{ file['id'] }}')">
+																	Copy
+																</button>
+																<a class="btn btn-sm btn-outline-secondary px-2" href="{{ file_link }}" target=”_blank”>
+																	Goto
+																</a>
+															</div>
 														</div>
-													</div>
-													<div class="text-center">
+													{% endif %}
+													<div class="text-center ms-auto">
 														<form action="{{ url_for('remove_file', unique_file_name=file['unique_file_name']) }}" method="POST">
-															<button class="btn btn-sm btn-outline-danger"
+															<button class="btn btn-sm btn-outline-danger ms-3"
 																	style="font-size: .875rem;"
 																	type="submit">
 																<svg class="bi flex-shrink-0" role="img">
@@ -395,31 +402,39 @@
 										</li>
 										<li class="list-group-item py-1" style="background-color: var(--bs-card-cap-bg);">
 											<div class="d-flex flex-row align-items-center">
-												<div class="pe-3 flex-grow-1">
+												<div class="flex-grow-1">
 													<div class="input-group">
+														{% set file_link = url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) %}
 														<input class="form-control form-control-sm border-1 shadow-none
 															   focus-primary-subtle text-body-secondary"
 															   type="url" id="LinkPublicFile{{ file['id'] }}"
-															   value="{{ url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) }}"
+															   value="{{ file_link }}"
 															   aria-label="readonly input example" readonly>
-														<button class="btn btn-outline-secondary px-1 py-0"
+														<button class="btn btn-outline-secondary px-2 py-0"
 																style="font-size: .875rem;"
 																type="button" id="button-copy-addon2"
-																onclick="copyToClipboard('LinkPublicFile{{ file['id'] }}')">Copy</button>
+																onclick="copyToClipboard('LinkPublicFile{{ file['id'] }}')">
+															Copy
+														</button>
+														<a class="btn btn-sm btn-outline-secondary px-2" href="{{ file_link }}" target=”_blank”>
+															Goto
+														</a>
 													</div>
 												</div>
-												<div>
-													<form action="{{ url_for('remove_file', unique_file_name=file['unique_file_name']) }}" method="POST">
-														<button class="btn btn-sm btn-outline-danger"
-																style="font-size: .875rem;"
-																type="submit">
-															<svg class="bi flex-shrink-0" role="img">
-																<use xlink:href="#trash-fill"/>
-															</svg>
-															Delete
-														</button>
-													</form>
-												</div>
+												{% if file['owner_id']|int == current_user.id %}
+													<div>
+														<form action="{{ url_for('remove_file', unique_file_name=file['unique_file_name']) }}" method="POST">
+															<button class="btn btn-sm btn-outline-danger ms-3"
+																	style="font-size: .875rem;"
+																	type="submit">
+																<svg class="bi flex-shrink-0" role="img">
+																	<use xlink:href="#trash-fill"/>
+																</svg>
+																Delete
+															</button>
+														</form>
+													</div>
+												{% endif %}
 											</div>
 										</li>
 									</ul>
@@ -446,15 +461,6 @@
 			</div>
 		</div>
 	</div>
-	<script type="text/javascript">
-		function copyToClipboard(TextElementID) {
-		  	var copyText = document.getElementById(TextElementID);
-
-		  	copyText.select();
-		  	copyText.setSelectionRange(0, 99999); // For mobile devices
-
-		  	navigator.clipboard.writeText(copyText.value);
-		}
-	</script>
+	<script type="text/javascript" src="{{ url_for('static', filename='upload_file_copy_to_clipboard.js') }}"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='reset_form.js') }}"></script>
 {% endblock %}

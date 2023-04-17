@@ -8,6 +8,7 @@ from flask import Flask, request, current_app, g, \
     flash, session, jsonify, send_from_directory
 from flask_paginate import Pagination
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
+from flask_apscheduler import APScheduler
 from util.check_password import generate_pwd_hash, check_pwd_hash
 from util.forms_checks import RegistrationForm, FileUploadForm
 from util.util import is_safe_url, secure_filename_unicode
@@ -15,15 +16,22 @@ from util.users import UserSQLite
 
 
 app = Flask(__name__)
-app.logger.setLevel("INFO")
+
 app.config.from_object("config.ConfigDefault")
 app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "uploaded_files")
 app.config["DB_PATH"] = os.path.join(app.root_path, "database", "database.db")
+
 login_manager = LoginManager(app)
 login_manager.login_view = "log_in"
 login_manager.login_message = "You are not logged in."
 login_manager.login_message_category = "danger"
 login_manager.session_protection = "strong"
+
+app.logger.setLevel("INFO")
+
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
 
 
 def connect_db():
@@ -165,7 +173,7 @@ def upload_file():
             db.commit()
 
             flash("File uploaded successfully!", category="success")
-            app.logger.info("File '{}' saved.".format(original_file_name_secured))
+            current_app.logger.info("File '{}' saved.".format(original_file_name_secured))
 
             return redirect(request.url)
         else:
@@ -227,7 +235,7 @@ def leave_message():
                 """, data)
                 db.commit()
 
-                app.logger.info("MSG FROM '{}': {}".format(getattr(current_user, "username", ""), msg_text))
+                current_app.logger.info("MSG FROM '{}': {}".format(getattr(current_user, "username", ""), msg_text))
                 flash("Successfully sent!", category="success")
                 return redirect(url_for("leave_message"))
             if len(msg_text) == 0:
@@ -426,6 +434,17 @@ def log_in():
             return redirect(request.url)
 
 
+@app.route("/log_out", methods=["GET"])
+def log_out():
+    if current_user.is_authenticated:
+        logout_user()
+        flash("Successfully logged out!", category="dark")
+    else:
+        flash("You are not logged in.", category="danger")
+        return redirect(url_for("log_in"))
+    return redirect(url_for("log_in"))
+
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "GET":
@@ -495,15 +514,55 @@ def register():
             return redirect(url_for("log_in"))
 
 
-@app.route("/log_out", methods=["GET"])
-def log_out():
-    if current_user.is_authenticated:
-        logout_user()
-        flash("Successfully logged out!", category="dark")
-    else:
-        flash("You are not logged in.", category="danger")
-        return redirect(url_for("log_in"))
-    return redirect(url_for("log_in"))
+@app.errorhandler(401)
+def unauthorized(error):
+    return render_template("errors/401.html"), 401
+
+
+@app.errorhandler(403)
+def forbidden(error):
+    return render_template("errors/403.html"), 403
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return render_template("errors/404.html"), 404
+
+
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    return render_template("errors/413.html"), 413
+
+
+@scheduler.task('interval', id="remove_expired_files", minutes=30)
+def remove_expired_files():
+    with scheduler.app.app_context():
+        db = get_db()
+        cur = db.cursor()
+
+        current_time = datetime.now().isoformat()
+
+        expiring_files = cur.execute("""
+            SELECT * FROM files
+            WHERE datetime(expires) <= ?
+        """, [current_time]).fetchall()
+        cur.execute("""
+            DELETE FROM files
+            WHERE datetime(expires) <= ?
+        """, [current_time])
+        db.commit()
+        db.close()
+
+        for expired_file in expiring_files:
+            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], expired_file["unique_file_name"]))
+
+        current_app.logger.debug(f"{len(expiring_files)} expired files successfully removed.")
+
+
+@app.teardown_request
+def teardown_db(error):
+    if hasattr(g, "db"):
+        g.db.close()
 
 
 @app.route("/rsp_tuple_list", methods=["GET"])
@@ -521,13 +580,13 @@ def user_profile(user_id):
     """
     GET POST PUT DELETE HEAD OPTIONS;
     """
-    app.logger.info("[*] Received request for user_profile with method {}..".format(request.method))
+    current_app.logger.info("[*] Received request for user_profile with method {}..".format(request.method))
     return "Profile page of user #{}".format(user_id)
 
 
 @app.route("/cookies_test", methods=["GET"])
 def cookies_test():
-    app.logger.info("old cookies: {}".format(request.cookies.get("last_time_visited", None)))
+    current_app.logger.info("old cookies: {}".format(request.cookies.get("last_time_visited", None)))
     rsp = make_response(render_template("pages/index.html"), 200)
     rsp.set_cookie("last_time_visited",
                    datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
@@ -549,8 +608,8 @@ def anonymous_user_test():
 @app.route("/books/<string:genre>/")
 @login_required
 def books(genre):
-    app.logger.info("method:", request.method)
-    app.logger.info("app.name", current_app.name)
+    current_app.logger.info("method:", request.method)
+    current_app.logger.info("app.name", current_app.name)
     return "All Books in {} category".format(genre)
 
 
@@ -588,32 +647,6 @@ def slashed():
 @login_required
 def unslashed():
     return "404 if slash at the end of link"
-
-
-@app.errorhandler(401)
-def unauthorized(error):
-    return render_template("errors/401.html"), 401
-
-
-@app.errorhandler(403)
-def forbidden(error):
-    return render_template("errors/403.html"), 403
-
-
-@app.errorhandler(404)
-def not_found(error):
-    return render_template("errors/404.html"), 404
-
-
-@app.errorhandler(413)
-def request_entity_too_large(error):
-    return render_template("errors/413.html"), 413
-
-
-@app.teardown_request
-def teardown_db(error):
-    if hasattr(g, "db"):
-        g.db.close()
 
 
 with app.test_request_context():

@@ -211,7 +211,7 @@ class RegistrationForm(FormsChecksMixin):
         return self.make_check_result(check, feedback)
 
     def check_password(self):
-        special_sym = ['$', '@', '#', '%', '_']
+        special_sym = ['!', '$', '@', '#', '%', '_']
 
         checks = [
             8 <= len(self.password) <= 20,

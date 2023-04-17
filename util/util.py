@@ -47,3 +47,11 @@ def secure_filename_unicode(filename: str) -> str:
         filename = f"_{filename}"
 
     return filename
+
+
+def remove_file_if_exists(file_path):
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        return True
+    else:
+        return False

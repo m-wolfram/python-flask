@@ -11,7 +11,7 @@ from flask_login import LoginManager, login_user, logout_user, current_user, log
 from flask_apscheduler import APScheduler
 from util.check_password import generate_pwd_hash, check_pwd_hash
 from util.forms_checks import RegistrationForm, FileUploadForm
-from util.util import is_safe_url, secure_filename_unicode
+from util.util import is_safe_url, secure_filename_unicode, remove_file_if_exists
 from util.users import UserSQLite
 
 
@@ -83,7 +83,7 @@ def upload_file():
             FROM files f
             LEFT JOIN users u ON f.owner_id = u.id
             WHERE privacy = 'Public'
-            ORDER BY upload_date DESC
+            ORDER BY datetime(upload_date) DESC
         """).fetchall()
         user_files = None
 
@@ -95,7 +95,7 @@ def upload_file():
                 FROM files f
                 LEFT JOIN users u ON f.owner_id = u.id
                 WHERE owner_id = ?
-                ORDER BY upload_date DESC
+                ORDER BY datetime(upload_date) DESC
             """, [current_user.id]).fetchall()
 
         return render_template("pages/upload_file.html", user_files=user_files, public_files=public_files)
@@ -193,8 +193,7 @@ def remove_file(unique_file_name):
     """, [unique_file_name]).fetchone()
 
     if file_record is None:
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        remove_file_if_exists(file_path)
         abort(404)
 
     if int(file_record["owner_id"]) == current_user.id:
@@ -202,8 +201,7 @@ def remove_file(unique_file_name):
             DELETE FROM files
             WHERE unique_file_name = ?
         """, [unique_file_name])
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        remove_file_if_exists(file_path)
         db.commit()
 
         flash("File deleted successfully!", category="success")
@@ -334,7 +332,7 @@ def leave_message_load_posts():
              WHERE like_author_id=:user_id) ul
         ON p.id = ul.post_id
         GROUP BY p.id
-        ORDER BY date DESC LIMIT :offset, :limit
+        ORDER BY datetime(date) DESC LIMIT :offset, :limit
     """, page_posts_query_data).fetchall() # TODO: split
     return render_template("elements/leave_message_posts.html", posts=page_posts)
 

@@ -187,31 +187,14 @@
 											  style="max-width: 180px;">
 											{{ file['original_file_name'] }}
 										</span>
+										<span class="text-body-tertiary">
+											&nbsp;<i>by</i> {{ file['username'] }} | {{ (file['size_in_bytes'] / (1024 * 1024))|round(2) }} Mb.
+										</span>
 									</button>
 								</h2>
 								<div id="collapseFile{{ file['id'] }}" class="accordion-collapse collapse">
 									<div class="accordion-body px-0 py-0" style="font-size: .875rem;">
 										<ul class="list-group list-group-flush py-0" style="--bs-list-group-bg: none;">
-											<li class="list-group-item py-1">
-												<div class="row align-items-center">
-													<div class="col-md-3">
-														Privacy:
-													</div>
-													<div class="col-md-9 text-end {{ privacy_text_color }}">
-														{{ file['privacy'] }}
-													</div>
-												</div>
-											</li>
-											<li class="list-group-item py-1">
-												<div class="row align-items-center">
-													<div class="col-md-3">
-														Size:
-													</div>
-													<div class="col-md-9 text-end text-body-secondary">
-														{{ (file['size_in_bytes'] / (1024 * 1024))|round(2) }} Mb.
-													</div>
-												</div>
-											</li>
 											<li class="list-group-item bg-transparent py-1">
 												<div class="row align-items-center">
 													<div class="col-md-3">
@@ -219,6 +202,16 @@
 													</div>
 													<div class="col-md-9 text-end {{ 'text-body-secondary' if file['description'] else 'text-body-tertiary' }} text-truncate">
 														{{ file['description'] if file['description'] else 'No description' }}
+													</div>
+												</div>
+											</li>
+											<li class="list-group-item py-1">
+												<div class="row align-items-center">
+													<div class="col-md-3">
+														Privacy:
+													</div>
+													<div class="col-md-9 text-end {{ privacy_text_color }}">
+														{{ file['privacy'] }}
 													</div>
 												</div>
 											</li>
@@ -242,34 +235,25 @@
 													</div>
 												</div>
 											</li>
-											<li class="list-group-item bg-transparent py-1">
-												<div class="row align-items-center">
-													<div class="col-md-3">
-														Owner:
-													</div>
-													<div class="col-md-9 text-end text-body-secondary">
-														{{ file['username'] }}
-													</div>
-												</div>
-											</li>
 											<li class="list-group-item py-1" style="background-color: var(--bs-card-cap-bg);">
 												<div class="d-flex flex-row align-items-center">
 													{% if not file['privacy'] == 'Private' %}
 														<div class="flex-grow-1">
 															<div class="input-group">
 																{% set file_link = url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) %}
-																<input class="form-control form-control-sm border-1 shadow-none
-																	   focus-primary-subtle text-body-secondary"
+																<input class="form-control form-control-sm bg-transparent
+																       border-1 border-secondary shadow-none
+																	   focus-primary-subtle text-primary-emphasis text-decoration-underline"
 																	   type="url" id="LinkFile{{ file['id'] }}"
 																	   value="{{ file_link }}"
 																	   aria-label="readonly input example" readonly>
-																<button class="btn btn-sm btn-outline-secondary px-2 py-0"
+																<button class="btn btn-sm btn-secondary px-2 py-0"
 																		style="font-size: .875rem;"
 																		type="button" id="button-copy-addon1"
 																		onclick="copyToClipboard('LinkFile{{ file['id'] }}')">
 																	Copy
 																</button>
-																<a class="btn btn-sm btn-outline-secondary px-2" href="{{ file_link }}" target="_blank">
+																<a class="btn btn-sm btn-primary px-2" href="{{ file_link }}" target="_blank">
 																	Goto
 																</a>
 															</div>
@@ -277,13 +261,10 @@
 													{% endif %}
 													<div class="text-center ms-auto">
 														<form action="{{ url_for('remove_file', unique_file_name=file['unique_file_name']) }}" method="POST">
-															<button class="btn btn-sm btn-outline-danger ms-3"
+															<button class="btn btn-sm btn-warning ms-2"
 																	style="font-size: .875rem;"
 																	type="submit">
-																<svg class="bi flex-shrink-0" role="img">
-																	<use xlink:href="#trash-fill"/>
-																</svg>
-																Delete
+																Delete file
 															</button>
 														</form>
 													</div>
@@ -306,7 +287,7 @@
 					<div class="col-md-12 text-end text-body-secondary">
 						<span>
 							<span id="private-files-count">{% if user_files %} {{ user_files|length }} {% else %} 0 {% endif %}</span> /
-							<span id="private-files-allowed">{{ config["FILES_PER_USER"] }}</span> private files uploaded
+							<span id="private-files-allowed">{{ config["FILES_PER_USER"] }}</span> files uploaded
 						</span>
 					</div>
 				</div>
@@ -334,32 +315,15 @@
 									<span class="d-inline-block text-truncate py-2">
 										{{ file['original_file_name'] }}
 									</span>
+									<span class="text-body-tertiary">
+										&nbsp;<i>by</i> {{ file['username'] }} | {{ (file['size_in_bytes'] / (1024 * 1024))|round(2) }} Mb.
+									</span>
 								</button>
 							</h2>
 							<div id="collapsePublicFile{{ file['id'] }}" class="accordion-collapse collapse">
 								<div class="accordion-body px-0 py-0" style="font-size: .875rem;">
 									<ul class="list-group list-group-flush"
 										style="--bs-list-group-bg: none;">
-										<li class="list-group-item py-1">
-											<div class="row align-items-center">
-												<div class="col-md-3">
-													Privacy:
-												</div>
-												<div class="col-md-9 text-end {{ privacy_text_color }}">
-													{{ file['privacy'] }}
-												</div>
-											</div>
-										</li>
-										<li class="list-group-item py-1">
-											<div class="row align-items-center">
-												<div class="col-md-3">
-													Size:
-												</div>
-												<div class="col-md-9 text-end text-body-secondary">
-													{{ (file['size_in_bytes'] / (1024 * 1024))|round(2) }} Mb.
-												</div>
-											</div>
-										</li>
 										<li class="list-group-item bg-transparent py-1">
 											<div class="row align-items-center">
 												<div class="col-md-3">
@@ -367,6 +331,16 @@
 												</div>
 												<div class="col-md-9 text-end {{ 'text-body-secondary' if file['description'] else 'text-body-tertiary' }} text-truncate">
 													{{ file['description'] if file['description'] else 'No description' }}
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item py-1">
+											<div class="row align-items-center">
+												<div class="col-md-3">
+													Privacy:
+												</div>
+												<div class="col-md-9 text-end {{ privacy_text_color }}">
+													{{ file['privacy'] }}
 												</div>
 											</div>
 										</li>
@@ -390,33 +364,24 @@
 												</div>
 											</div>
 										</li>
-										<li class="list-group-item bg-transparent py-1">
-											<div class="row align-items-center">
-												<div class="col-md-3">
-													Owner:
-												</div>
-												<div class="col-md-9 text-end text-body-secondary">
-													{{ file['username'] }}
-												</div>
-											</div>
-										</li>
 										<li class="list-group-item py-1" style="background-color: var(--bs-card-cap-bg);">
 											<div class="d-flex flex-row align-items-center">
 												<div class="flex-grow-1">
 													<div class="input-group">
 														{% set file_link = url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) %}
-														<input class="form-control form-control-sm border-1 shadow-none
-															   focus-primary-subtle text-body-secondary"
+														<input class="form-control form-control-sm bg-transparent
+														 	   border-1 border-secondary shadow-none
+															   focus-primary-subtle text-primary-emphasis text-decoration-underline"
 															   type="url" id="LinkPublicFile{{ file['id'] }}"
 															   value="{{ file_link }}"
 															   aria-label="readonly input example" readonly>
-														<button class="btn btn-outline-secondary px-2 py-0"
+														<button class="btn btn-secondary px-2 py-0"
 																style="font-size: .875rem;"
 																type="button" id="button-copy-addon2"
 																onclick="copyToClipboard('LinkPublicFile{{ file['id'] }}')">
 															Copy
 														</button>
-														<a class="btn btn-sm btn-outline-secondary px-2" href="{{ file_link }}" target=”_blank”>
+														<a class="btn btn-sm btn-primary px-2" href="{{ file_link }}" target=”_blank”>
 															Goto
 														</a>
 													</div>
@@ -424,13 +389,10 @@
 												{% if file['owner_id']|int == current_user.id %}
 													<div>
 														<form action="{{ url_for('remove_file', unique_file_name=file['unique_file_name']) }}" method="POST">
-															<button class="btn btn-sm btn-outline-danger ms-3"
+															<button class="btn btn-sm btn-warning ms-2"
 																	style="font-size: .875rem;"
 																	type="submit">
-																<svg class="bi flex-shrink-0" role="img">
-																	<use xlink:href="#trash-fill"/>
-																</svg>
-																Delete
+																Delete file
 															</button>
 														</form>
 													</div>

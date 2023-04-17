@@ -243,7 +243,7 @@
 																{% set file_link = url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) %}
 																<input class="form-control form-control-sm bg-transparent
 																       border-1 border-secondary shadow-none
-																	   focus-primary-subtle text-primary-emphasis text-decoration-underline"
+																	   focus-primary-subtle text-body-secondary"
 																	   type="url" id="LinkFile{{ file['id'] }}"
 																	   value="{{ file_link }}"
 																	   aria-label="readonly input example" readonly>
@@ -261,7 +261,7 @@
 													{% endif %}
 													<div class="text-center ms-auto">
 														<form action="{{ url_for('remove_file', unique_file_name=file['unique_file_name']) }}" method="POST">
-															<button class="btn btn-sm btn-warning ms-2"
+															<button class="btn btn-sm btn-danger ms-2"
 																	style="font-size: .875rem;"
 																	type="submit">
 																Delete file
@@ -371,7 +371,7 @@
 														{% set file_link = url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) %}
 														<input class="form-control form-control-sm bg-transparent
 														 	   border-1 border-secondary shadow-none
-															   focus-primary-subtle text-primary-emphasis text-decoration-underline"
+															   focus-primary-subtle text-body-secondary"
 															   type="url" id="LinkPublicFile{{ file['id'] }}"
 															   value="{{ file_link }}"
 															   aria-label="readonly input example" readonly>
@@ -389,7 +389,7 @@
 												{% if file['owner_id']|int == current_user.id %}
 													<div>
 														<form action="{{ url_for('remove_file', unique_file_name=file['unique_file_name']) }}" method="POST">
-															<button class="btn btn-sm btn-warning ms-2"
+															<button class="btn btn-sm btn-danger ms-2"
 																	style="font-size: .875rem;"
 																	type="submit">
 																Delete file

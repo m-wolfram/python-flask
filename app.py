@@ -76,17 +76,6 @@ def upload_file():
         db = get_db()
         cur = db.cursor()
 
-        public_files = cur.execute("""
-            SELECT f.id, original_file_name, unique_file_name, size_in_bytes,
-                   owner_id, privacy, strftime("%d.%m.%Y %H:%M", upload_date) upload_date,
-                   strftime("%d.%m.%Y %H:%M", expires) expires, description, username
-            FROM files f
-            LEFT JOIN users u ON f.owner_id = u.id
-            WHERE privacy = 'Public'
-            ORDER BY datetime(upload_date) DESC
-        """).fetchall()
-        user_files = None
-
         if current_user.is_authenticated:
             user_files = cur.execute("""
                 SELECT f.id, original_file_name, unique_file_name, size_in_bytes,
@@ -97,6 +86,26 @@ def upload_file():
                 WHERE owner_id = ?
                 ORDER BY datetime(upload_date) DESC
             """, [current_user.id]).fetchall()
+            public_files = cur.execute("""
+                SELECT f.id, original_file_name, unique_file_name, size_in_bytes,
+                       owner_id, privacy, strftime("%d.%m.%Y %H:%M", upload_date) upload_date,
+                       strftime("%d.%m.%Y %H:%M", expires) expires, description, username
+                FROM files f
+                LEFT JOIN users u ON f.owner_id = u.id
+                WHERE privacy = 'Public' AND f.owner_id <> ?
+                ORDER BY datetime(upload_date) DESC
+            """, [current_user.id]).fetchall()
+        else:
+            user_files = None
+            public_files = cur.execute("""
+                SELECT f.id, original_file_name, unique_file_name, size_in_bytes,
+                       owner_id, privacy, strftime("%d.%m.%Y %H:%M", upload_date) upload_date,
+                       strftime("%d.%m.%Y %H:%M", expires) expires, description, username
+                FROM files f
+                LEFT JOIN users u ON f.owner_id = u.id
+                WHERE privacy = 'Public'
+                ORDER BY datetime(upload_date) DESC
+            """).fetchall()
 
         return render_template("pages/upload_file.html", user_files=user_files, public_files=public_files)
     elif request.method == "POST":

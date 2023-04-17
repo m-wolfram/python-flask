@@ -564,7 +564,7 @@ def request_entity_too_large(error):
     return render_template("errors/413.html"), 413
 
 
-@scheduler.task('interval', id="remove_expired_files", minutes=30)
+@scheduler.task('interval', id="remove_expired_files", minutes=5)
 def remove_expired_files():
     with scheduler.app.app_context():
         db = get_db()
@@ -576,10 +576,12 @@ def remove_expired_files():
             SELECT * FROM files
             WHERE datetime(expires) <= ?
         """, [current_time]).fetchall()
+
         cur.execute("""
             DELETE FROM files
             WHERE datetime(expires) <= ?
         """, [current_time])
+
         db.commit()
         db.close()
 
@@ -694,5 +696,5 @@ with app.app_context():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000)
-    #app.run(host="0.0.0.0", port=5000, debug=False)
+    #app.run(host="127.0.0.1", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=False)

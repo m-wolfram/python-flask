@@ -241,12 +241,6 @@
 														<div class="flex-grow-1">
 															<div class="input-group">
 																{% set file_link = url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) %}
-																<input class="form-control form-control-sm bg-transparent
-																       border-1 border-tertiary shadow-none
-																	   focus-primary-subtle text-body-secondary"
-																	   type="url" id="LinkFile{{ file['id'] }}"
-																	   value="{{ file_link }}"
-																	   aria-label="readonly input example" readonly>
 																<button class="btn btn-sm btn-outline-secondary px-2 py-0"
 																		style="font-size: .875rem;"
 																		type="button" id="button-copy-addon1"
@@ -256,6 +250,12 @@
 																<a class="btn btn-sm btn-outline-secondary px-2" href="{{ file_link }}" target="_blank">
 																	Open
 																</a>
+																<input class="form-control form-control-sm bg-transparent
+																       border-1 border-tertiary shadow-none
+																	   focus-primary-subtle text-body-secondary"
+																	   type="url" id="LinkFile{{ file['id'] }}"
+																	   value="{{ file_link }}"
+																	   aria-label="readonly input example" readonly>
 															</div>
 														</div>
 													{% endif %}
@@ -365,12 +365,6 @@
 												<div class="flex-grow-1">
 													<div class="input-group">
 														{% set file_link = url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) %}
-														<input class="form-control form-control-sm bg-transparent
-														 	   border-1 border-tertiary shadow-none
-															   focus-primary-subtle text-body-secondary"
-															   type="url" id="LinkPublicFile{{ file['id'] }}"
-															   value="{{ file_link }}"
-															   aria-label="readonly input example" readonly>
 														<button class="btn btn-outline-secondary px-2 py-0"
 																style="font-size: .875rem;"
 																type="button" id="button-copy-addon2"
@@ -380,6 +374,12 @@
 														<a class="btn btn-sm btn-outline-secondary px-2" href="{{ file_link }}" target=”_blank”>
 															Open
 														</a>
+														<input class="form-control form-control-sm bg-transparent
+														 	   border-1 border-tertiary shadow-none
+															   focus-primary-subtle text-body-secondary"
+															   type="url" id="LinkPublicFile{{ file['id'] }}"
+															   value="{{ file_link }}"
+															   aria-label="readonly input example" readonly>
 													</div>
 												</div>
 											</div>

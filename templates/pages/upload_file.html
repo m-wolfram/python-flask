@@ -72,9 +72,9 @@
 							<select class="form-select form-select-sm {{ accessibility_validation }}"
                                 id="validationPrivacy" name="privacy" required>
 								{% if form is defined %}
-									<option disabled value="">Accessibility</option>
+									<option disabled value="">Access</option>
 								{% else %}
-									<option selected disabled value="">Accessibility</option>
+									<option selected disabled value="">Access</option>
 								{% endif %}
 								{% for accessibility_option in config['FILE_UPLOAD_ACCESSIBILITY_OPTIONS'] %}
 									{% if form is defined and form.accessibility == accessibility_option|string %}

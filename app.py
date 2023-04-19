@@ -189,9 +189,9 @@ def upload_file():
             abort(401)
 
 
-@app.route("/files/remove/<path:unique_file_name>", methods=["POST"])
+@app.route("/files/delete/<path:unique_file_name>", methods=["POST"])
 @login_required
-def remove_file(unique_file_name):
+def delete_file(unique_file_name):
     db = get_db()
     cur = db.cursor()
 
@@ -202,7 +202,6 @@ def remove_file(unique_file_name):
     """, [unique_file_name]).fetchone()
 
     if file_record is None:
-        remove_file_if_exists(file_path)
         abort(404)
 
     if int(file_record["owner_id"]) == current_user.id:
@@ -553,6 +552,12 @@ def register():
             return redirect(url_for("log_in"))
 
 
+@app.teardown_request
+def teardown_db(error):
+    if hasattr(g, "db"):
+        g.db.close()
+
+
 @app.errorhandler(401)
 def unauthorized(error):
     return render_template("errors/401.html"), 401
@@ -600,108 +605,6 @@ def remove_expired_files():
         current_app.logger.debug(f"{len(expiring_files)} expired files successfully removed.")
 
 
-@app.teardown_request
-def teardown_db(error):
-    if hasattr(g, "db"):
-        g.db.close()
-
-
-@app.route("/rsp_tuple_list", methods=["GET"])
-def rsp_tuple_test_list():
-    return "Rsp text list", 200, [("header1", "val1"), ("header2", "val2")]
-
-
-@app.route("/rsp_tuple_dict", methods=["GET"])
-def rsp_tuple_test_dict():
-    return "Rsp text dict", 200, {"header1": "val1", "header2": "val2"}
-
-
-@app.route("/user/<int:user_id>/", methods=["GET", "POST"])
-def user_profile(user_id):
-    """
-    GET POST PUT DELETE HEAD OPTIONS;
-    """
-    current_app.logger.info("[*] Received request for user_profile with method {}..".format(request.method))
-    return "Profile page of user #{}".format(user_id)
-
-
-@app.route("/cookies_test", methods=["GET"])
-def cookies_test():
-    current_app.logger.info("old cookies: {}".format(request.cookies.get("last_time_visited", None)))
-    rsp = make_response(render_template("pages/index.html"), 200)
-    rsp.set_cookie("last_time_visited",
-                   datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
-                   max_age=300,
-                   httponly=True,
-                   samesite="Strict")
-    # rsp.headers["cookies_set"] = True
-    return rsp
-
-
-@app.route("/anonymous_user_test", methods=["GET"])
-def anonymous_user_test():
-    if "anonymous" in current_user.__class__.__name__.lower():
-        return "True"
-    else:
-        return "False"
-
-
-@app.route("/books/<string:genre>/")
-@login_required
-def books(genre):
-    current_app.logger.info("method:", request.method)
-    current_app.logger.info("app.name", current_app.name)
-    return "All Books in {} category".format(genre)
-
-
-@app.route("/p/<path:path>/")
-@login_required
-def path_converter_test(path):
-    return "path converter is: {}".format(path)
-
-
-@app.route("/s/<string:string>/")
-@login_required
-def string_converter_test(string):
-    return "string converter is: {}".format(string)
-
-
-@app.route("/i/<int:integer>/")
-@login_required
-def int_converter_test(integer):
-    return "int converter is: {}".format(integer)
-
-
-@app.route("/f/<float:f>/")
-@login_required
-def float_converter_test(f):
-    return "float converter is: {}".format(f)
-
-
-@app.route("/slashed/")
-@login_required
-def slashed():
-    return "Redirects to slashed if there's no slash at the end of link"
-
-
-@app.route("/unslashed")
-@login_required
-def unslashed():
-    return "404 if slash at the end of link"
-
-
-with app.test_request_context():
-    print("hello from test request")
-    print(url_for("unslashed"))
-    print(url_for("slashed"))
-    print(url_for("float_converter_test", f=0.9))
-    print(url_for("int_converter_test", integer=10))
-    print(url_for("path_converter_test", path="a/b/c/d/usr"))
-    print("\nstatic file path:", url_for("static", filename="biden.png"))
-    print("url_for args", url_for("leave_message", txt="HelloMyName", nonearg=None, author="authorIsMe"))
-
-with app.app_context():
-    print('hello from app context')
 
 
 if __name__ == "__main__":

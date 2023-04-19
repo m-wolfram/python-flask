@@ -46,9 +46,8 @@
 					<div class="row g-2">
 						<div class="col-md-12">
 							<div class="bd-callout bd-callout-info mt-0 mb-0 py-3" style="font-size: .875rem;">
-								File must be less than {{ (config['FILE_UPLOAD_MAX_SIZE'] / (1024 * 1024))|int }} Mb.<br>
-								Possible extensions: .txt, .pdf, .png, .jpg, .gif, .docx, .xlsx, .pptx, .rar
-									and others.
+								File size must be less than {{ (config['FILE_UPLOAD_MAX_SIZE'] / (1024 * 1024))|int }} mb,
+								and have one of the following extensions: txt, pdf, png, jpg, gif, docx, xlsx, pptx, rar.
 							</div>
 						</div>
 						<div class="col-md-12">
@@ -184,11 +183,8 @@
 											data-bs-target="#collapseFile{{ file['id'] }}" aria-expanded="true"
 											aria-controls="collapseFile{{ file['id'] }}">
 										<span class="d-inline-block text-truncate py-2"
-											  style="max-width: 180px;">
+											  style="max-width: 280px; font-size: .875rem;">
 											{{ file['original_file_name'] }}
-										</span>
-										<span class="text-body-tertiary">
-											&nbsp;from {{ file['username'] }}, {{ (file['size_in_bytes'] / (1024 * 1024))|round(2) }} Mb.
 										</span>
 									</button>
 								</h2>
@@ -235,6 +231,26 @@
 													</div>
 												</div>
 											</li>
+											<li class="list-group-item bg-transparent py-1">
+												<div class="row align-items-center text-body-tertiary">
+													<div class="col-md-3">
+														Owner:
+													</div>
+													<div class="col-md-9 text-end">
+														{{ file['username'] }}
+													</div>
+												</div>
+											</li>
+											<li class="list-group-item bg-transparent py-1">
+												<div class="row align-items-center text-body-tertiary">
+													<div class="col-md-3">
+														Size:
+													</div>
+													<div class="col-md-9 text-end">
+														{{ (file['size_in_bytes'] / (1024 * 1024))|round(2) }} Mb.
+													</div>
+												</div>
+											</li>
 											<li class="list-group-item py-1">
 												<div class="d-flex flex-row align-items-center">
 													{% if not file['privacy'] == 'Private' %}
@@ -260,7 +276,7 @@
 														</div>
 													{% endif %}
 													<div class="text-center ms-auto">
-														<form action="{{ url_for('remove_file', unique_file_name=file['unique_file_name']) }}" method="POST">
+														<form action="{{ url_for('delete_file', unique_file_name=file['unique_file_name']) }}" method="POST">
 															<button class="btn btn-sm btn-danger ms-2"
 																	style="font-size: .875rem;"
 																	type="submit">
@@ -301,8 +317,9 @@
 		</div>
 		<div id="public-files-container" class="card-body pb-0">
 			{% if current_user.is_authenticated %}
-				<div class="bd-callout bd-callout-info mt-0 mb-3 py-3" style="font-size: .875rem;">
-					Your public files are stored but not shown for you here. Others can see it.
+				<div class="pb-3 text-body-tertiary" style="font-size: .875rem;">
+					<i class="bi bi-info-circle"></i>
+					Your public files are stored but not shown for you here.
 					You can edit them in your files section and they will be updated for others here immediately.
 				</div>
 			{% endif %}
@@ -318,11 +335,8 @@
 										type="button" data-bs-toggle="collapse"
 										data-bs-target="#collapsePublicFile{{ file['id'] }}" aria-expanded="true"
 										aria-controls="collapsePublicFile{{ file['id'] }}">
-									<span class="d-inline-block text-truncate py-2">
+									<span class="d-inline-block text-truncate py-2" style="max-width: 280px; font-size: .875rem;">
 										{{ file['original_file_name'] }}
-									</span>
-									<span class="text-body-tertiary">
-										&nbsp;from {{ file['username'] }}, {{ (file['size_in_bytes'] / (1024 * 1024))|round(2) }} Mb.
 									</span>
 								</button>
 							</h2>
@@ -357,6 +371,26 @@
 												</div>
 												<div class="col-md-9 text-end">
 													{{ file['expires'] }}
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item bg-transparent py-1">
+											<div class="row align-items-center text-body-tertiary">
+												<div class="col-md-3">
+													Owner:
+												</div>
+												<div class="col-md-9 text-end">
+													{{ file['username'] }}
+												</div>
+											</div>
+										</li>
+										<li class="list-group-item bg-transparent py-1">
+											<div class="row align-items-center text-body-tertiary">
+												<div class="col-md-3">
+													Size:
+												</div>
+												<div class="col-md-9 text-end">
+													{{ (file['size_in_bytes'] / (1024 * 1024))|round(2) }} Mb.
 												</div>
 											</div>
 										</li>

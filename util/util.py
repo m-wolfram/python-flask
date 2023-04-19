@@ -1,7 +1,6 @@
 import os
 import re
 import sys
-from uuid import uuid4
 from unicodedata import normalize
 from urllib.parse import urlparse, urljoin
 

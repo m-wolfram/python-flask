@@ -1,6 +1,16 @@
 import os
 
 
+class FormsChecksMixin:
+    @staticmethod
+    def make_check_result(check, feedback):
+        result = {
+            "check": check,
+            "feedback": feedback
+        }
+        return result
+
+
 class FilesChecksMixin:
     @staticmethod
     def check_extension(filename, allowed_extensions):

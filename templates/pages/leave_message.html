@@ -68,9 +68,10 @@
 			</div>
 		</div>
 	</div>
+	<script type="text/javascript" src="{{ url_for('static', filename='load_more_posts.js') }}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='delete_post.js') }}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='update_post_likes.js') }}"></script>
 	{% if current_user.is_authenticated %}
 		<script type="text/javascript" src="{{ url_for('static', filename='reset_form.js') }}"></script>
 	{% endif %}
-	<script type="text/javascript" src="{{ url_for('static', filename='manage_posts.js') }}"></script>
-	<script type="text/javascript" src="{{ url_for('static', filename='update_post_likes.js') }}"></script>
 {% endblock %}

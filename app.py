@@ -2,7 +2,7 @@ import os
 import sqlite3
 from pprint import pprint
 from uuid import uuid4
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from flask import Flask, request, current_app, g, \
     url_for, render_template, make_response, redirect, abort, \
     flash, session, jsonify, send_from_directory
@@ -10,7 +10,8 @@ from flask_paginate import Pagination
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from flask_apscheduler import APScheduler
 from util.check_password import generate_pwd_hash, check_pwd_hash
-from util.forms_checks import RegistrationForm, FileUploadForm
+from util.registration_form import RegistrationForm
+from util.upload_file_form import FileUploadForm
 from util.util import is_safe_url, secure_filename_unicode, remove_file_if_exists
 from util.users import UserSQLite
 
@@ -371,7 +372,7 @@ def leave_message_delete_post(post_id):
 @app.route("/leave_message/posts/like", methods=["GET"])
 def leave_message_like():
     """
-    TODO:
+    TODO?:
     split into 3 requests:
         insert like (PUT),
         delete like (DELETE),
@@ -395,6 +396,7 @@ def leave_message_like():
         (SELECT * FROM posts_likes
         WHERE post_id=? AND like_author_id=(SELECT id FROM users WHERE username=?)) ex
     """, [post_id, username]).fetchone()["ex"])
+
     if not is_liked_by_current_user:
         cur.execute("""
             INSERT INTO posts_likes VALUES(NULL, ?, (SELECT id FROM users WHERE username=?))
@@ -459,7 +461,7 @@ def log_in():
 
         if check_pwd_hash(user["password_hash"], password):
             if remember:
-                login_user(UserSQLite(user), remember=remember, duration=None)
+                login_user(UserSQLite(user), remember=remember, duration=timedelta(weeks=4))
             else:
                 login_user(UserSQLite(user))
 
@@ -603,8 +605,6 @@ def remove_expired_files():
             os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], expired_file["unique_file_name"]))
 
         current_app.logger.debug(f"{len(expiring_files)} expired files successfully removed.")
-
-
 
 
 if __name__ == "__main__":

@@ -33,7 +33,7 @@
 				<div class="card card-body mb-3 bg-body-secondary border border-secondary-subtle text-center"
 					 style="font-size: .875rem;">
 					<p class="mb-0">
-						Uploading a file is <a href="{{ url_for('log_in', next=url_for('upload_file')) }}"
+						Uploading a file is <a href="{{ url_for('auth.log_in', next=url_for('file_uploader.upload_file')) }}"
 												class="link-body"
 												style="color: var(--bs-body-color);">log in</a> required.
 					</p>
@@ -256,7 +256,7 @@
 													{% if not file['privacy'] == 'Private' %}
 														<div class="flex-grow-1">
 															<div class="input-group">
-																{% set file_link = url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) %}
+																{% set file_link = url_for('file_uploader.download_file', unique_file_name=file['unique_file_name'], _external=True) %}
 																<button class="btn btn-sm btn-outline-secondary px-2 py-0"
 																		style="font-size: .875rem;"
 																		type="button" id="button-copy-addon1"
@@ -276,7 +276,7 @@
 														</div>
 													{% endif %}
 													<div class="text-center ms-auto">
-														<form action="{{ url_for('delete_file', unique_file_name=file['unique_file_name']) }}" method="POST">
+														<form action="{{ url_for('file_uploader.delete_file', unique_file_name=file['unique_file_name']) }}" method="POST">
 															<button class="btn btn-sm btn-danger ms-2"
 																	style="font-size: .875rem;"
 																	type="submit">
@@ -315,133 +315,32 @@
 		<div class="card-header text-start bg-dark fs-6">
 			Public files
 		</div>
+		{% if current_user.is_authenticated %}
+			<div class="card-body text-body-tertiary pb-0" style="font-size: .875rem;">
+				<i class="bi bi-info-circle"></i>
+				Your public files are stored but not shown for you here.
+				You can edit them in your files section and they will be updated for others here immediately.
+			</div>
+		{% endif %}
 		<div id="public-files-container" class="card-body pb-0">
-			{% if current_user.is_authenticated %}
-				<div class="pb-3 text-body-tertiary" style="font-size: .875rem;">
-					<i class="bi bi-info-circle"></i>
-					Your public files are stored but not shown for you here.
-					You can edit them in your files section and they will be updated for others here immediately.
-				</div>
-			{% endif %}
-			{% if public_files %}
-				{% for file in public_files %}
-					{% set privacy_text_color = 'text-primary text-opacity-75' %}
-					{% set privacy_border_color = 'border-primary' %}
-					<div class="accordion accordion-dark-small">
-						<div class="accordion-item mb-2">
-							<h2 class="accordion-header">
-								<button class="accordion-button collapsed shadow-none d-flex justify-content-between
-										border-start border-4 {{ privacy_border_color }} border-opacity-25"
-										type="button" data-bs-toggle="collapse"
-										data-bs-target="#collapsePublicFile{{ file['id'] }}" aria-expanded="true"
-										aria-controls="collapsePublicFile{{ file['id'] }}">
-									<span class="d-inline-block text-truncate py-2" style="max-width: 280px; font-size: .875rem;">
-										{{ file['original_file_name'] }}
-									</span>
-								</button>
-							</h2>
-							<div id="collapsePublicFile{{ file['id'] }}" class="accordion-collapse collapse">
-								<div class="accordion-body px-0 py-0" style="font-size: .875rem;">
-									<ul class="list-group list-group-flush"
-										style="--bs-list-group-bg: none;">
-										<li class="list-group-item bg-transparent py-1">
-											<div class="row align-items-center text-body-tertiary">
-												<div class="col-md-3">
-													Description:
-												</div>
-												<div class="col-md-9 text-end text-truncate">
-													{{ file['description'] if file['description'] else 'No description' }}
-												</div>
-											</div>
-										</li>
-										<li class="list-group-item bg-transparent py-1">
-											<div class="row align-items-center text-body-tertiary">
-												<div class="col-md-3">
-													Upload date:
-												</div>
-												<div class="col-md-9 text-end">
-													{{ file['upload_date'] }}
-												</div>
-											</div>
-										</li>
-										<li class="list-group-item bg-transparent py-1">
-											<div class="row align-items-center text-body-tertiary">
-												<div class="col-md-3">
-													Expiration date:
-												</div>
-												<div class="col-md-9 text-end">
-													{{ file['expires'] }}
-												</div>
-											</div>
-										</li>
-										<li class="list-group-item bg-transparent py-1">
-											<div class="row align-items-center text-body-tertiary">
-												<div class="col-md-3">
-													Owner:
-												</div>
-												<div class="col-md-9 text-end">
-													{{ file['username'] }}
-												</div>
-											</div>
-										</li>
-										<li class="list-group-item bg-transparent py-1">
-											<div class="row align-items-center text-body-tertiary">
-												<div class="col-md-3">
-													Size:
-												</div>
-												<div class="col-md-9 text-end">
-													{{ (file['size_in_bytes'] / (1024 * 1024))|round(2) }} Mb.
-												</div>
-											</div>
-										</li>
-										<li class="list-group-item py-1">
-											<div class="d-flex flex-row align-items-center">
-												<div class="flex-grow-1">
-													<div class="input-group">
-														{% set file_link = url_for('download_file', unique_file_name=file['unique_file_name'], _external=True) %}
-														<button class="btn btn-outline-secondary px-2 py-0"
-																style="font-size: .875rem;"
-																type="button" id="button-copy-addon2"
-																onclick="copyToClipboard('LinkPublicFile{{ file['id'] }}')">
-															Copy
-														</button>
-														<a class="btn btn-sm btn-outline-secondary px-2" href="{{ file_link }}" target=”_blank”>
-															Open
-														</a>
-														<input class="form-control form-control-sm bg-transparent
-														 	   border-1 border-tertiary shadow-none
-															   focus-primary-subtle text-body-secondary"
-															   type="url" id="LinkPublicFile{{ file['id'] }}"
-															   value="{{ file_link }}"
-															   aria-label="readonly input example" readonly>
-													</div>
-												</div>
-											</div>
-										</li>
-									</ul>
-								</div>
-							</div>
-						</div>
-					</div>
-				{% endfor %}
-			{% else %}
-				<div>
-					<div class="card card-body text-center py-1 mb-2" style="font-size: .875rem;">
-						Nothing yet here.
-					</div>
-				</div>
-			{% endif %}
 		</div>
 		<div class="card-footer bg-stripes-body mt-2">
 			<div class="row g-0 align-items-center">
-				<div class="col-md-12 text-end text-body-secondary">
+				<div class="col-md-4 offset-md-4 text-center">
+					<button id="load-more" type="button" class="btn btn-primary btn-sm">Load more</button>
+				</div>
+				<div class="col-md-4 text-end text-body-secondary">
 					<span>
-						<span id="public-files-total">{{ public_files|length }}</span> files
+						<span id="public-files-count"></span> out of
+						<span id="public-files-total"></span> public files
 					</span>
 				</div>
 			</div>
 		</div>
 	</div>
+	<script id="load_more_public_files_script" type="text/javascript"
+			for_user="{{ 1 if current_user.is_authenticated else 0 }}"
+			src="{{ url_for('static', filename='load_more_public_files.js') }}"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='copy_to_clipboard.js') }}"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='reset_form.js') }}"></script>
 {% endblock %}

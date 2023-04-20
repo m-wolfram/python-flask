@@ -11,7 +11,7 @@
 				<div class="card card-body mb-3 bg-body-secondary border border-secondary-subtle"
 					 style="font-size: .875rem;">
 					<p class="mb-0">
-						Leaving a message is <a href="{{ url_for('log_in', next=url_for('leave_message')) }}"
+						Leaving a message is <a href="{{ url_for('auth.log_in', next=url_for('public_messages.leave_message')) }}"
 												class="link-body"
 												style="color: var(--bs-body-color);">log in</a> required.
 					</p>

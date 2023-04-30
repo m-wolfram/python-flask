@@ -11,3 +11,4 @@ Project consists of following dependencies (which are also presented in requirem
 - Flask-Paginate,
 - Python-usernames,
 - SQLite3.
+and others.

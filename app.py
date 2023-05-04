@@ -88,7 +88,7 @@ def sync_files_with_db():
         cur = db.cursor()
 
         files = os.listdir(os.path.join(scheduler.app.root_path, "uploaded_files"))
-        sql = "DELETE FROM files where unique_file_name NOT IN ({})".format(','.join(['?'] * len(files)))
+        sql = "DELETE FROM files WHERE unique_file_name NOT IN ({})".format(','.join(['?'] * len(files)))
         cur.execute(sql, files)
 
         db.commit()

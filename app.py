@@ -81,6 +81,22 @@ def remove_expired_files():
         scheduler.app.logger.debug(f"{len(expiring_files)} expired files successfully removed.")
 
 
+@scheduler.task('interval', id="sync_files_with_db", hours=6)
+def sync_files_with_db():
+    with scheduler.app.app_context():
+        db = sqlite3db.get_db()
+        cur = db.cursor()
+
+        files = os.listdir(os.path.join(scheduler.app.root_path, "uploaded_files"))
+        sql = "DELETE FROM files where unique_file_name NOT IN ({})".format(','.join(['?'] * len(files)))
+        cur.execute(sql, files)
+
+        db.commit()
+        db.close()
+
+        scheduler.app.logger.debug("Uploaded files successfully synced with db.")
+
+
 if __name__ == "__main__":
     create_app().run(host="127.0.0.1", port=5000)
     #create_app().run(host="0.0.0.0", port=5000, debug=False)

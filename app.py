@@ -54,7 +54,7 @@ def load_user(user_id):
     return None
 
 
-@scheduler.task('interval', id="remove_expired_files", hours=1)
+@scheduler.task('interval', id="remove_expired_files", hours=1, next_run_time=datetime.now())
 def remove_expired_files():
     with scheduler.app.app_context():
         db = sqlite3db.get_db()
@@ -81,7 +81,7 @@ def remove_expired_files():
         scheduler.app.logger.debug(f"{len(expiring_files)} expired files successfully removed.")
 
 
-@scheduler.task('interval', id="sync_files_with_db", hours=6)
+@scheduler.task('interval', id="sync_files_with_db", hours=6, next_run_time=datetime.now())
 def sync_files_with_db():
     with scheduler.app.app_context():
         db = sqlite3db.get_db()

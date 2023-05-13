@@ -13,6 +13,7 @@ Project consists of following dependencies (which are also presented with a vers
 - Flask-Paginate,
 - Python-usernames,
 - SQLite3.
+
 and others.
 
 Following are utilized in a project:

@@ -6,7 +6,8 @@
 	style="--bs-btn-padding-x: none; --bs-btn-padding-y: none;"
 		page="{{ page }}"
 		post_id="{{ post['id'] }}" {{ is_disabled }}>
-	<svg class="bi flex-shrink-0 me-1" role="img">
+	<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+		 class="bi bi-heart-fill" viewBox="0 0 16 16">
 		<use xlink:href="#heart-fill"/>
 	</svg>
 	{{ post["likes"] }}

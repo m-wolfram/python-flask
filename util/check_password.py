@@ -1,8 +1,9 @@
 from hashlib import pbkdf2_hmac
+from hmac import compare_digest
 from os import urandom
 
 
-def generate_pwd_hash(password, salt_size=16, iterations=100000):
+def generate_pwd_hash(password, salt_size=16, iterations=100_000):
     salt = urandom(salt_size)
     hash_ = pbkdf2_hmac("sha512",
                         password.encode("utf-8"),
@@ -17,8 +18,8 @@ def check_pwd_hash(hash_, password):
     new_hash = pbkdf2_hmac("sha512",
                         password.encode("utf-8"),
                         salt,
-                        100000)
-    return new_hash == pwd_hash
+                        100_000)
+    return compare_digest(new_hash, pwd_hash)
 
 
 if __name__ == "__main__":

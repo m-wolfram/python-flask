@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from flask import Flask, url_for
+from flask import Flask
 from flask_login import LoginManager
 from flask_apscheduler import APScheduler
 from blueprints.auth.views import auth

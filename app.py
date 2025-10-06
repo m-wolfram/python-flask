@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from flask import Flask
+from flask import Flask, url_for
 from flask_login import LoginManager
 from flask_apscheduler import APScheduler
 from blueprints.auth.views import auth
@@ -9,7 +9,6 @@ from blueprints.file_uploader.views import file_uploader
 from blueprints.home_page.views import home_page
 from util.users import UserSQLite
 from database import sqlite3db
-
 
 login_manager = LoginManager()
 scheduler = APScheduler()
@@ -98,5 +97,5 @@ def sync_files_with_db():
 
 
 if __name__ == "__main__":
-    create_app().run(host="127.0.0.1", port=5000)
-    #create_app().run(host="0.0.0.0", port=5000, debug=False)
+    create_app().run(host="127.0.0.1", port=5443, ssl_context="adhoc")
+    #create_app().run(host="0.0.0.0", port=5443, debug=False, ssl_context="adhoc")
